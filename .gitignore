@@ -1,60 +1,61 @@
 # 依赖
-/node_modules
-/.pnp
-.pnp.js
+/example
+/frontend/node_modules
+/frontend/.pnp
+/frontend/.pnp.js
 
 # 测试
-/coverage
+/frontend/coverage
 
 # 生产构建
-/build
-/dist
+/frontend/build
+/frontend/dist
 
 # 环境变量
-.env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
+/frontend/.env
+/frontend/.env.local
+/frontend/.env.development.local
+/frontend/.env.test.local
+/frontend/.env.production.local
 
 # 日志
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
+/frontend/npm-debug.log*
+/frontend/yarn-debug.log*
+/frontend/yarn-error.log*
 
 # 编辑器和IDE配置
-.idea/
-.vscode/
-*.swp
-*.swo
-.DS_Store
+/frontend/.idea/
+/.vscode
+/frontend/*.swp
+/frontend/*.swo
+/frontend/.DS_Store
 
 # 操作系统文件
-Thumbs.db
-.DS_Store
+/frontend/Thumbs.db
+/frontend/.DS_Store
 
 # 缓存
-.eslintcache
-.stylelintcache
+/frontend/.eslintcache
+/frontend/.stylelintcache
 
 # 其他
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-.pnpm-debug.log*
+/frontend/npm-debug.log*
+/frontend/yarn-debug.log*
+/frontend/yarn-error.log*
+/frontend/.pnpm-debug.log*
 
 # 类型定义生成的文件
-*.d.ts
+/frontend/*.d.ts
 
 # Next.js 相关
-.next/
-out/
+/frontend/.next/
+/frontend/out/
 
 # Gatsby 相关
-.cache/
-public
+/frontend/.cache/
+/frontend/public/
 
 # 遗留的构建文件夹
-dist/
-build/
+/frontend/dist/
+/frontend/build/
     

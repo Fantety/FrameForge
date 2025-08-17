@@ -6,8 +6,9 @@
  * @LastEditors: Fantety
  * @LastEditTime: 2025-08-17 18:05:37
  */
-import React, { useState } from 'react';
-import { Box, Typography, Paper, Button, TextField, FormControl, InputLabel, Select, MenuItem, Slider, FormControlLabel, Switch, Card, CardMedia, CircularProgress, LinearProgress } from '@mui/material';
+import React, { useState, useRef, useEffect } from 'react';
+import { Box, Typography, Paper, Button, TextField, FormControl, InputLabel, Select, MenuItem, Slider, FormControlLabel, Switch, Card, CardMedia, CircularProgress, LinearProgress, Modal, IconButton } from '@mui/material';
+import CloseIcon from '@mui/icons-material/Close';
 
 const ImageGeneration = () => {
   const [prompt, setPrompt] = useState('');
@@ -18,6 +19,10 @@ const ImageGeneration = () => {
   const [generatedImage, setGeneratedImage] = useState(null);
   const [loading, setLoading] = useState(false);
   const [downloading, setDownloading] = useState(false);
+  const [openModal, setOpenModal] = useState(false);
+  const [userRequest, setUserRequest] = useState('');
+  const [generatedPrompt, setGeneratedPrompt] = useState('');
+  const [generatingPrompt, setGeneratingPrompt] = useState(false);
 
   const handleGenerate = async () => {
     setLoading(true);
@@ -51,6 +56,34 @@ const ImageGeneration = () => {
     }
   };
 
+  const handleGeneratePrompt = async () => {
+    setGeneratingPrompt(true);
+    try {
+      // 调用后端API生成提示词
+      const response = await fetch('http://localhost:8000/api/generate-prompt', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          user_request: userRequest
+        })
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      setGeneratedPrompt(data.generated_prompt);
+    } catch (error) {
+      console.error('生成提示词时出错:', error);
+      setGeneratedPrompt('生成提示词失败，请重试。');
+    } finally {
+      setGeneratingPrompt(false);
+    }
+  };
+  
   const handleDownload = async () => {
     setDownloading(true);
     try {
@@ -122,6 +155,113 @@ const ImageGeneration = () => {
       <Typography variant="h4" gutterBottom sx={{ color: 'white' }}>
         图像生成
       </Typography>
+      
+      <Modal
+        open={openModal}
+        onClose={() => setOpenModal(false)}
+        sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+      >
+        <Box sx={{ 
+          bgcolor: 'background.paper', 
+          p: 4, 
+          borderRadius: 2, 
+          boxShadow: 24, 
+          width: 400,
+          position: 'relative'
+        }}>
+          <IconButton
+            aria-label="close"
+            onClick={() => setOpenModal(false)}
+            sx={{
+              position: 'absolute',
+              right: 8,
+              top: 8,
+              color: 'grey.500',
+            }}
+          >
+            <CloseIcon />
+          </IconButton>
+          <Typography variant="h6" component="h2" gutterBottom>
+            AI生成提示词
+          </Typography>
+          <TextField
+            fullWidth
+            label="输入你的需求"
+            value={userRequest}
+            onChange={(e) => setUserRequest(e.target.value)}
+            margin="normal"
+            variant="outlined"
+            multiline
+            rows={4}
+          />
+          <Box sx={{ position: 'relative', display: 'inline-block', mt: 2 }}>
+            <Button 
+              variant="contained" 
+              onClick={handleGeneratePrompt}
+              disabled={generatingPrompt}
+              sx={{ 
+                background: 'linear-gradient(45deg, #00c6ff, #0072ff)',
+                color: 'white',
+                fontWeight: 'bold',
+                padding: '10px 20px',
+                borderRadius: '50px',
+                '&:hover': {
+                  background: 'linear-gradient(45deg, #00b3e6, #0066cc)'
+                },
+                '&.Mui-disabled': {
+                  background: 'linear-gradient(45deg, #cccccc, #999999)',
+                  color: 'white'
+                }
+              }}
+            >
+              生成提示词
+            </Button>
+            {generatingPrompt && (
+              <CircularProgress
+                size={24}
+                sx={{
+                  position: 'absolute',
+                  top: '50%',
+                  left: '50%',
+                  marginTop: '-12px',
+                  marginLeft: '-12px',
+                }}
+              />
+            )}
+          </Box>
+          {generatingPrompt ? (
+            <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
+              <Typography>正在生成提示词...</Typography>
+            </Box>
+          ) : generatedPrompt && (
+            <Box sx={{ mt: 2 }}>
+              <Typography variant="subtitle1" gutterBottom>
+                生成的提示词：
+              </Typography>
+              <TextField
+                fullWidth
+                value={generatedPrompt}
+                multiline
+                rows={3}
+                variant="outlined"
+                InputProps={{
+                  readOnly: true,
+                }}
+              />
+              <Button 
+                variant="outlined" 
+                onClick={() => {
+                  setPrompt(generatedPrompt);
+                  setOpenModal(false);
+                }}
+                sx={{ mt: 1 }}
+              >
+                使用此提示词
+              </Button>
+            </Box>
+          )}
+        </Box>
+      </Modal>
       <Paper elevation={3} sx={{ padding: 3, background: 'rgba(0, 0, 0, 0.2)', borderRadius: 2, marginBottom: 3 }}>
         <Typography variant="h6" gutterBottom sx={{ color: 'white' }}>
           AI图像生成工具
@@ -133,6 +273,21 @@ const ImageGeneration = () => {
         <Box sx={{ display: 'flex', gap: 2 }}>
           {/* Prompt输入框在左侧 */}
           <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+            <Button 
+              variant="outlined" 
+              onClick={() => setOpenModal(true)}
+              sx={{ 
+                mb: 2, 
+                borderColor: 'white', 
+                color: 'white',
+                '&:hover': {
+                  borderColor: 'white',
+                  backgroundColor: 'rgba(255, 255, 255, 0.1)'
+                }
+              }}
+            >
+              AI生成提示词
+            </Button>
             <TextField
               fullWidth
               label="Prompt"

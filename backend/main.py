@@ -11,6 +11,10 @@ class ImageGenerationRequest(BaseModel):
     watermark: Optional[bool] = True
 
 
+class PromptGenerationRequest(BaseModel):
+    user_request: str
+
+
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 import os
@@ -102,6 +106,43 @@ if os.path.isdir(frontend_build_path):
                 raise he
             except Exception as e:
                 print(f"图像生成过程中发生错误: {str(e)}")
+                raise HTTPException(status_code=500, detail=str(e))
+        
+        # 添加提示词生成API端点
+        @app.options("/api/generate-prompt")
+        def generate_prompt_options():
+            return {"status": "ok"}
+
+        @app.post("/api/generate-prompt")
+        def generate_prompt(request: PromptGenerationRequest):
+            user_request = request.user_request
+            try:
+                print(f"收到提示词生成请求: user_request={user_request}")
+                
+                # 验证参数
+                if not user_request or len(user_request.strip()) == 0:
+                    raise HTTPException(status_code=400, detail="用户需求不能为空")
+                
+                # 调用提示词生成API
+                completion = client.chat.completions.create(
+                    model="doubao-1-5-lite-32k-250115",
+                    messages=[
+                        {"role": "system", "content": "你是一个AI提示词专家，专门帮助用户创建详细、精确的图像生成提示词。你的任务是根据用户的需求，生成一个结构化的提示词，包含以下元素：\n1. 主体描述（详细说明主要对象）\n2. 场景/环境（背景设置）\n3. 风格/艺术类型（如：数字艺术、油画、摄影等）\n4. 技术细节（如：高细节、8k分辨率等）\n\n请以英文输出提示词，确保描述具体且富有表现力。"},
+                        {"role": "user", "content": user_request},
+                    ],
+                )
+                
+                # 获取生成的提示词
+                generated_prompt = completion.choices[0].message.content
+                print(f"提示词生成成功: {generated_prompt}")
+                
+                # 返回生成的提示词
+                return {"generated_prompt": generated_prompt}
+            except HTTPException as he:
+                print(f"HTTP异常: {he.detail}")
+                raise he
+            except Exception as e:
+                print(f"提示词生成过程中发生错误: {str(e)}")
                 raise HTTPException(status_code=500, detail=str(e))
         
         # 挂载静态文件服务到根路径

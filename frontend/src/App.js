@@ -40,8 +40,8 @@ function App() {
                 <h2>释放您的游戏创造力</h2>
                 <p>通过AI技术将您的游戏想法转化为令人惊叹的视觉素材</p>
                 <button id="get-started" className="btn btn-primary" onClick={handleStart}>
-                  立即开始创作
-                </button>
+          立即开始创作
+        </button>
               </div>
             </main>
           </>

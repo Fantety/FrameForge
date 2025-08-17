@@ -17,8 +17,8 @@ const AnimationGeneration = () => {
         <Button 
           variant="contained" 
           sx={{ 
-            background: 'linear-gradient(45deg, #00c6ff, #0072ff)',
-            color: 'white',
+            background: 'linear-gradient(45deg, #ff4500, #ffa500)',
+            color: '#333',
             fontWeight: 'bold',
             padding: '10px 20px',
             borderRadius: '50px',

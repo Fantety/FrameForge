@@ -14,7 +14,7 @@ const Sidebar = ({ activeSection, onSectionChange }) => {
         [`& .MuiDrawer-paper`]: { 
           width: 240, 
           boxSizing: 'border-box',
-          background: 'rgba(30, 60, 114, 0.8)',
+          background: 'rgba(44, 10, 77, 0.8)',
           color: 'white',
           borderRight: '1px solid rgba(255, 255, 255, 0.1)'
         },
@@ -31,10 +31,10 @@ const Sidebar = ({ activeSection, onSectionChange }) => {
           onClick={() => onSectionChange('image')}
           sx={{ 
             '&.Mui-selected': { 
-              backgroundColor: 'rgba(0, 200, 255, 0.3)' 
+              backgroundColor: 'rgba(139, 0, 139, 0.3)' 
             },
             '&:hover': { 
-              backgroundColor: 'rgba(0, 200, 255, 0.1)' 
+              backgroundColor: 'rgba(255, 69, 0, 0.1)' 
             }
           }}
         >
@@ -49,10 +49,10 @@ const Sidebar = ({ activeSection, onSectionChange }) => {
           onClick={() => onSectionChange('animation')}
           sx={{ 
             '&.Mui-selected': { 
-              backgroundColor: 'rgba(0, 200, 255, 0.3)' 
+              backgroundColor: 'rgba(139, 0, 139, 0.3)' 
             },
             '&:hover': { 
-              backgroundColor: 'rgba(0, 200, 255, 0.1)' 
+              backgroundColor: 'rgba(255, 69, 0, 0.1)' 
             }
           }}
         >

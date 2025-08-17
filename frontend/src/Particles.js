@@ -24,33 +24,40 @@ const Particles = () => {
     
     window.addEventListener('mousemove', handleMouseMove);
     
-    // 粒子系统
+    // 几何图形系统
     const particles = [];
-    const particleCount = 150;
+    const particleCount = 200;
     
-    // 创建粒子
+    // 创建几何图形
     for (let i = 0; i < particleCount; i++) {
+      const shapeType = Math.floor(Math.random() * 4); // 0: triangle, 1: square, 2: hexagon, 3: star
       particles.push({
         x: Math.random() * canvas.width,
         y: Math.random() * canvas.height,
-        size: Math.random() * 3 + 1,
-        speedX: Math.random() * 2 - 1,
-        speedY: Math.random() * 2 - 1,
-        color: `rgba(0, 200, 255, ${Math.random() * 0.5 + 0.1})`
+        size: Math.random() * 60 + 40,
+        speedX: Math.random() * 1 - 0.5,
+        speedY: Math.random() * 1 - 0.5,
+        rotation: Math.random() * Math.PI * 2,
+        rotationSpeed: Math.random() * 0.02 - 0.01,
+        color: `rgba(${Math.floor(Math.random() * 255)}, ${Math.floor(Math.random() * 255)}, ${Math.floor(Math.random() * 255)}, ${Math.random() * 0.6 + 0.3})`,
+        shape: shapeType
       });
     }
     
-    // 绘制粒子和连线
+    // 绘制几何图形
     const drawParticles = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       
-      // 更新和绘制粒子
+      // 更新和绘制几何图形
       for (let i = 0; i < particles.length; i++) {
         const p = particles[i];
         
         // 更新位置
         p.x += p.speedX;
         p.y += p.speedY;
+        
+        // 更新旋转角度
+        p.rotation += p.rotationSpeed;
         
         // 鼠标交互
         const dx = p.x - mousePosition.x;
@@ -67,42 +74,64 @@ const Particles = () => {
         if (p.x > canvas.width || p.x < 0) p.speedX = -p.speedX;
         if (p.y > canvas.height || p.y < 0) p.speedY = -p.speedY;
         
-        // 绘制粒子
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        // 绘制几何图形
+        ctx.save();
+        ctx.translate(p.x, p.y);
+        ctx.rotate(p.rotation);
         ctx.fillStyle = p.color;
-        ctx.fill();
-      }
-      
-      // 绘制粒子间的连线
-      for (let i = 0; i < particles.length; i++) {
-        for (let j = i + 1; j < particles.length; j++) {
-          const dx = particles[i].x - particles[j].x;
-          const dy = particles[i].y - particles[j].y;
-          const distance = Math.sqrt(dx * dx + dy * dy);
-          
-          if (distance < 120) {
-            const opacity = 1 - distance / 120;
+        
+        switch (p.shape) {
+          case 0: // 三角形
             ctx.beginPath();
-            ctx.strokeStyle = `rgba(0, 200, 255, ${opacity * 0.3})`;
-            ctx.lineWidth = 0.7;
-            ctx.moveTo(particles[i].x, particles[i].y);
-            ctx.lineTo(particles[j].x, particles[j].y);
-            ctx.stroke();
-          }
+            ctx.moveTo(0, -p.size / 2);
+            ctx.lineTo(-p.size / 2, p.size / 2);
+            ctx.lineTo(p.size / 2, p.size / 2);
+            ctx.closePath();
+            ctx.fill();
+            break;
+          case 1: // 正方形
+            ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size);
+            break;
+          case 2: // 六边形
+            ctx.beginPath();
+            for (let j = 0; j < 6; j++) {
+              const angle = (j * Math.PI) / 3;
+              const x = Math.cos(angle) * p.size / 2;
+              const y = Math.sin(angle) * p.size / 2;
+              if (j === 0) ctx.moveTo(x, y);
+              else ctx.lineTo(x, y);
+            }
+            ctx.closePath();
+            ctx.fill();
+            break;
+          case 3: // 星形
+            ctx.beginPath();
+            for (let j = 0; j < 10; j++) {
+              const angle = (j * Math.PI) / 5;
+              const radius = j % 2 === 0 ? p.size / 2 : p.size / 4;
+              const x = Math.cos(angle) * radius;
+              const y = Math.sin(angle) * radius;
+              if (j === 0) ctx.moveTo(x, y);
+              else ctx.lineTo(x, y);
+            }
+            ctx.closePath();
+            ctx.fill();
+            break;
         }
+        
+        ctx.restore();
       }
       
       // 绘制鼠标周围的光环
       const gradient = ctx.createRadialGradient(
         mousePosition.x, mousePosition.y, 0,
-        mousePosition.x, mousePosition.y, 100
+        mousePosition.x, mousePosition.y, 150
       );
-      gradient.addColorStop(0, 'rgba(0, 200, 255, 0.2)');
-      gradient.addColorStop(1, 'rgba(0, 200, 255, 0)');
+      gradient.addColorStop(0, 'rgba(255, 69, 0, 0.4)');
+      gradient.addColorStop(1, 'rgba(255, 165, 0, 0)');
       
       ctx.beginPath();
-      ctx.arc(mousePosition.x, mousePosition.y, 100, 0, Math.PI * 2);
+      ctx.arc(mousePosition.x, mousePosition.y, 150, 0, Math.PI * 2);
       ctx.fillStyle = gradient;
       ctx.fill();
       

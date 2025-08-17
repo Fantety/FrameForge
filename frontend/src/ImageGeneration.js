@@ -200,13 +200,13 @@ const ImageGeneration = () => {
               onClick={handleGeneratePrompt}
               disabled={generatingPrompt}
               sx={{ 
-                background: 'linear-gradient(45deg, #00c6ff, #0072ff)',
-                color: 'white',
+                background: 'linear-gradient(45deg, #ff4500, #ffa500)',
+                color: '#333',
                 fontWeight: 'bold',
                 padding: '10px 20px',
                 borderRadius: '50px',
                 '&:hover': {
-                  background: 'linear-gradient(45deg, #00b3e6, #0066cc)'
+                  background: 'linear-gradient(45deg, #e03e00, #e69500)'
                 },
                 '&.Mui-disabled': {
                   background: 'linear-gradient(45deg, #cccccc, #999999)',
@@ -262,7 +262,7 @@ const ImageGeneration = () => {
           )}
         </Box>
       </Modal>
-      <Paper elevation={3} sx={{ padding: 3, background: 'rgba(0, 0, 0, 0.2)', borderRadius: 2, marginBottom: 3 }}>
+      <Paper elevation={3} sx={{ padding: 3, background: 'rgba(44, 10, 77, 0.3)', borderRadius: 2, marginBottom: 3 }}>
         <Typography variant="h6" gutterBottom sx={{ color: 'white' }}>
           AI图像生成工具
         </Typography>
@@ -277,14 +277,14 @@ const ImageGeneration = () => {
               variant="outlined" 
               onClick={() => setOpenModal(true)}
               sx={{ 
-                mb: 2, 
-                borderColor: 'white', 
-                color: 'white',
-                '&:hover': {
-                  borderColor: 'white',
-                  backgroundColor: 'rgba(255, 255, 255, 0.1)'
-                }
-              }}
+              mb: 2, 
+              borderColor: '#ff4500', 
+              color: '#ff4500',
+              '&:hover': {
+                borderColor: '#ffa500',
+                backgroundColor: 'rgba(255, 69, 0, 0.1)'
+              }
+            }}
             >
               AI生成提示词
             </Button>
@@ -295,7 +295,22 @@ const ImageGeneration = () => {
               onChange={(e) => setPrompt(e.target.value)}
               margin="normal"
               variant="outlined"
-              sx={{ flexGrow: 1, '& .MuiInputBase-input': { color: 'white' }, '& .MuiInputLabel-root': { color: 'white' } }}
+              sx={{ 
+                flexGrow: 1, 
+                '& .MuiInputBase-input': { color: 'white' }, 
+                '& .MuiInputLabel-root': { color: 'white' },
+                '& .MuiOutlinedInput-root': {
+                  '& fieldset': {
+                    borderColor: '#ff4500',
+                  },
+                  '&:hover fieldset': {
+                    borderColor: '#ffa500',
+                  },
+                  '&.Mui-focused fieldset': {
+                    borderColor: '#ffa500',
+                  },
+                }
+              }}
               multiline
               rows={8}
             />
@@ -309,7 +324,20 @@ const ImageGeneration = () => {
                 value={size}
                 onChange={(e) => setSize(e.target.value)}
                 label="Size"
-                sx={{ '& .MuiSelect-select': { color: 'white' } }}
+                sx={{ 
+                  '& .MuiSelect-select': { color: 'white' },
+                  '& .MuiOutlinedInput-root': {
+                    '& fieldset': {
+                      borderColor: '#ff4500',
+                    },
+                    '&:hover fieldset': {
+                      borderColor: '#ffa500',
+                    },
+                    '&.Mui-focused fieldset': {
+                      borderColor: '#ffa500',
+                    },
+                  }
+                }}
               >
                 <MenuItem value="512x512">512x512</MenuItem>
                 <MenuItem value="768x768">768x768</MenuItem>
@@ -327,6 +355,17 @@ const ImageGeneration = () => {
                 max={10}
                 step={0.1}
                 valueLabelDisplay="auto"
+                sx={{
+                  '& .MuiSlider-thumb': {
+                    background: 'linear-gradient(45deg, #ff4500, #ffa500)',
+                  },
+                  '& .MuiSlider-track': {
+                    background: 'linear-gradient(90deg, #ff4500, #ffa500)',
+                  },
+                  '& .MuiSlider-rail': {
+                    background: 'linear-gradient(90deg, #ff4500, #ffa500)',
+                  }
+                }}
               />
             </Box>
             
@@ -338,12 +377,45 @@ const ImageGeneration = () => {
                   type="number"
                   margin="normal"
                   variant="outlined"
-                  sx={{ '& .MuiInputBase-input': { color: 'white' }, '& .MuiInputLabel-root': { color: 'white' } }}
+                  sx={{ 
+                    '& .MuiInputBase-input': { color: 'white' }, 
+                    '& .MuiInputLabel-root': { color: 'white' },
+                    '& .MuiOutlinedInput-root': {
+                      '& fieldset': {
+                        borderColor: '#ff4500',
+                      },
+                      '&:hover fieldset': {
+                        borderColor: '#ffa500',
+                      },
+                      '&.Mui-focused fieldset': {
+                        borderColor: '#ffa500',
+                      },
+                    }
+                  }}
                 />
             
             <FormControlLabel
-              control={<Switch checked={watermark} onChange={(e) => setWatermark(e.target.checked)} />}
-              sx={{ color: 'white' }}
+              control={<Switch checked={watermark} onChange={(e) => setWatermark(e.target.checked)} 
+              sx={{
+                '& .MuiSwitch-switchBase.Mui-checked': {
+                  color: '#ff4500',
+                  '&:hover': {
+                    backgroundColor: 'rgba(255, 69, 0, 0.08)',
+                  },
+                },
+                '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
+                  background: 'linear-gradient(90deg, #ff4500, #ffa500)',
+                },
+              }} />}
+              sx={{ 
+                color: 'white',
+                '& .MuiFormControlLabel-label': {
+                  background: 'linear-gradient(90deg, #ff4500, #ffa500)',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  fontWeight: 'bold'
+                }
+              }}
               label="Watermark"
             />
           </Box>
@@ -354,14 +426,14 @@ const ImageGeneration = () => {
           onClick={handleGenerate}
           disabled={loading}
           sx={{ 
-            background: 'linear-gradient(45deg, #00c6ff, #0072ff)',
-            color: 'white',
-            fontWeight: 'bold',
-            padding: '10px 20px',
-            borderRadius: '50px',
-            marginTop: 2,
-            minWidth: '150px'
-          }}
+              background: 'linear-gradient(45deg, #ff4500, #ffa500)',
+              color: '#333',
+              fontWeight: 'bold',
+              padding: '10px 20px',
+              borderRadius: '50px',
+              marginTop: 2,
+              minWidth: '150px'
+            }}
         >
           {loading ? '生成中...' : '生成图像'}
         </Button>
@@ -374,7 +446,7 @@ const ImageGeneration = () => {
       )}
       
       {generatedImage && (
-        <Paper elevation={3} sx={{ padding: 3, background: 'rgba(0, 0, 0, 0.2)', borderRadius: 2 }}>
+        <Paper elevation={3} sx={{ padding: 3, background: 'rgba(44, 10, 77, 0.3)', borderRadius: 2 }}>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 2 }}>
             <Typography variant="h6" gutterBottom sx={{ color: 'white' }}>
               生成的图像
@@ -384,8 +456,8 @@ const ImageGeneration = () => {
               onClick={handleDownload}
               disabled={downloading}
               sx={{ 
-                background: 'linear-gradient(45deg, #00c6ff, #0072ff)',
-                color: 'white',
+                background: 'linear-gradient(45deg, #ff4500, #ffa500)',
+                color: '#333',
                 fontWeight: 'bold',
                 padding: '10px 20px',
                 borderRadius: '50px'

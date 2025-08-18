@@ -2,6 +2,7 @@ from fastapi import FastAPI, HTTPException, Body
 from pydantic import BaseModel
 from typing import Optional, List
 import os
+import sys
 import requests
 from datetime import datetime, timedelta
 import time
@@ -21,7 +22,7 @@ client = Ark(
     # 此为默认路径，您可根据业务所在地域进行配置
     base_url="https://ark.cn-beijing.volces.com/api/v3",
     # 请将您的 API Key 存储在环境变量 ARK_API_KEY 中
-    api_key="37939eeb-b9ba-44e5-bf3d-3f4d4a2bc32a",
+    api_key=os.environ.get('ARK_API_KEY'),
 )
 
 class ImageGenerationRequest(BaseModel):
@@ -52,7 +53,7 @@ app = FastAPI()
 # 添加CORS中间件以允许跨域请求
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://localhost:8000"],
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -69,10 +70,17 @@ os.makedirs(frames_dir, exist_ok=True)
 app.mount("/frames", StaticFiles(directory=frames_dir), name="frames")
 
 # 检查前端依赖和构建
-current_dir = os.path.dirname(__file__)
-frontend_dir = os.path.join(current_dir, "..", "frontend")
-frontend_build_path = os.path.join(frontend_dir, "build")
-node_modules_path = os.path.join(frontend_dir, "node_modules")
+# 获取当前执行文件的目录（支持exe打包）
+if getattr(sys, 'frozen', False):
+    # 如果是打包后的exe文件，获取exe所在目录
+    current_dir = os.path.dirname(sys.executable)
+else:
+    # 如果是源代码运行，获取main.py所在目录
+    current_dir = os.path.dirname(__file__)
+    
+frontend_dir = os.path.join(current_dir, "build")
+frontend_build_path = frontend_dir
+node_modules_path = os.path.join(current_dir, "..", "frontend", "node_modules")
 
 print(f"检查前端目录: {frontend_dir}")
 print(f"检查node_modules路径: {node_modules_path}")

@@ -1,11 +1,3 @@
-<!--
- * @FilePath: \README.md
- * @Author: Fantety
- * @Descripttion: 
- * @Date: 2025-08-17 17:25:35
- * @LastEditors: Fantety
- * @LastEditTime: 2025-08-17 17:39:31
--->
 # FrameForge
 
 FrameForge是一个使用FastAPI和React构建的Web应用程序。
@@ -17,14 +9,152 @@ FrameForge/
 ├── backend/
 │   ├── main.py
 │   └── requirements.txt
-└── frontend/
-    ├── public/
-    │   └── index.html
-    ├── src/
-    │   ├── App.js
-    │   └── index.js
-    └── package.json
+├── frontend/
+│   ├── public/
+│   │   └── index.html
+│   ├── src/
+│   │   ├── App.js
+│   │   └── index.js
+│   └── package.json
+├── bin/
+├── build.py
+└── package_app.py
 ```
+
+## 应用打包分发
+
+### 前置条件
+
+在执行打包脚本之前，请确保您已安装以下软件：
+
+1. Node.js (推荐版本14或更高版本) - [Node.js官网](https://nodejs.org/)
+2. Python (推荐版本3.7或更高版本)
+
+您可以通过以下命令检查是否已正确安装：
+
+```bash
+node --version
+npm --version
+python --version
+```
+
+确保这些命令在您的系统PATH中可用。如果命令无法找到，请重新安装相应软件并确保在安装过程中选择了将程序添加到系统PATH的选项。
+
+### 打包方式
+
+FrameForge提供两种打包方式：
+
+#### 方式一：完整打包（包含前端构建）
+
+这种方式会构建前端应用并将其与后端一起打包，适用于分发完整的应用。
+
+1. 运行打包脚本：
+   ```bash
+   python build.py
+   ```
+
+2. 打包完成后，会在项目根目录的`bin`文件夹中生成`frameforge.zip`文件。
+
+3. 分发方法：
+   - 将`frameforge.zip`文件发送给其他用户
+   - 用户解压后，根据操作系统运行相应的启动脚本：
+     - Windows: 双击`start_frameforge.bat`或运行`start_frameforge.bat`
+     - Linux/Mac: 运行`./start_frameforge.sh`
+
+#### 方式二：简化打包（仅后端）
+
+这种方式仅打包后端代码，不包含前端构建，适用于已有前端构建结果或只需要后端的情况。
+
+1. 运行简化打包脚本：
+   ```bash
+   python package_app.py
+   ```
+
+2. 打包完成后，会在项目根目录的`bin`文件夹中生成`frameforge_package.zip`文件。
+
+3. 分发方法：
+   - 将`frameforge_package.zip`文件发送给其他用户
+   - 用户解压后，根据操作系统运行相应的启动脚本：
+     - Windows: 双击`start_frameforge.bat`或运行`start_frameforge.bat`
+     - Linux/Mac: 运行`./start_frameforge.sh`
+
+#### 创建不包含源代码的可执行文件
+
+如果您希望创建不包含Python源代码的可执行文件，可以使用PyInstaller。这将保护您的源代码不被查看。
+
+1. 安装PyInstaller：
+   ```bash
+   pip install pyinstaller
+   ```
+
+2. 运行打包脚本，它会自动创建可执行文件：
+   ```bash
+   python build.py
+   ```
+
+3. 如果您不希望创建可执行文件，可以使用以下命令：
+   ```bash
+   python build.py --no-exe
+   ```
+
+当创建可执行文件时，打包脚本会自动排除Python源代码文件（保留requirements.txt），生成的zip文件将包含可执行文件而不是源代码。
+
+### 启动应用
+
+解压打包文件后，您可以通过以下方式启动应用：
+
+#### Windows
+
+双击`start_frameforge.bat`文件，或在命令行中运行：
+
+```cmd
+start_frameforge.bat
+```
+
+#### Linux/Mac
+
+在终端中运行：
+
+```bash
+./start_frameforge.sh
+```
+
+启动后，您可以在浏览器中访问`http://localhost:8000`来使用FrameForge应用。
+
+### 项目结构
+
+```
+FrameForge/
+├── backend/          # 后端代码
+├── frontend/         # 前端代码
+├── bin/              # 打包输出目录
+│   ├── frameforge.zip       # 完整打包文件
+│   └── frameforge_package.zip # 简化打包文件
+├── build.py          # 完整打包脚本
+├── package_app.py    # 简化打包脚本
+└── README.md
+```
+
+### 注意事项
+
+1. 如果您在运行打包脚本时遇到问题，请检查是否已正确安装Node.js和Python，并确保它们已添加到系统PATH中。
+2. 在某些Windows系统上，可能需要以管理员权限运行打包脚本。
+3. 如果您不需要构建前端应用，可以使用简化打包方式（package_app.py），它不会尝试构建前端应用，但需要确保后端代码中的静态文件路径正确配置。
+4. 打包脚本会自动排除后端的frames目录，因为该目录通常包含临时文件，不需要打包分发。
+
+1. 分发:
+   将生成的zip文件发送给其他用户，他们解压后即可使用。
+
+2. 使用:
+   在解压后的目录中，用户可以运行:
+   - Windows系统: 双击`start_frameforge.bat`或运行`start_frameforge.bat`
+   - Linux/Mac系统: 运行`./start_frameforge.sh`
+
+   应用将在`http://localhost:8000`上启动。
+
+   注意：
+   - 如果使用方式一打包，应用将包含完整的前端界面
+   - 如果使用方式二打包且没有前端构建结果，用户需要单独运行前端或通过其他方式提供前端界面
 
 ## 仅运行后端访问Web应用
 

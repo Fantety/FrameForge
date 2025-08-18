@@ -1,7 +1,7 @@
 # 依赖
 /example
 /backend/frames
-
+/bin
 /frontend/node_modules
 /frontend/.pnp
 /frontend/.pnp.js

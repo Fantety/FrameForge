@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Box, Typography, Paper, Button, TextField, FormControl, InputLabel, Select, MenuItem, Slider, FormControlLabel, Switch, Card, CardMedia, CircularProgress, LinearProgress, Modal, IconButton, Divider, Grid, Checkbox } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import PreviewIcon from '@mui/icons-material/Preview';
+import JSZip from 'jszip';
 
 const AnimationGeneration = () => {
   const [prompt, setPrompt] = useState('');
@@ -199,6 +200,37 @@ const AnimationGeneration = () => {
       // 否则全选
       setSelectedFrames(splitFrames.map((_, index) => index));
     }
+  };
+
+  // 导出选中的帧为zip文件
+  const handleExportFrames = async () => {
+    if (selectedFrames.length === 0) {
+      alert('请至少选择一帧');
+      return;
+    }
+
+    const zip = new JSZip();
+    
+    // 创建一个数组来存储所有Promise
+    const promises = selectedFrames.map(async (frameIndex) => {
+      const frameUrl = splitFrames[frameIndex];
+      const response = await fetch(frameUrl);
+      const blob = await response.blob();
+      const fileName = `frame_${frameIndex + 1}.png`;
+      zip.file(fileName, blob);
+    });
+
+    // 等待所有图片获取完成
+    await Promise.all(promises);
+
+    // 生成zip文件
+    const content = await zip.generateAsync({ type: 'blob' });
+    
+    // 创建下载链接
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(content);
+    link.download = 'selected_frames.zip';
+    link.click();
   };
 
   // 预览帧动画
@@ -929,6 +961,21 @@ const AnimationGeneration = () => {
                       }}
                     >
                       预览动画
+                    </Button>
+                    <Button
+                      variant="contained"
+                      onClick={handleExportFrames}
+                      sx={{
+                        background: 'linear-gradient(45deg, #ff4500, #ffa500)',
+                        color: '#333',
+                        fontWeight: 'bold',
+                        padding: '5px 15px',
+                        borderRadius: '50px',
+                        marginTop: 2,
+                        marginLeft: 2
+                      }}
+                    >
+                      导出帧
                     </Button>
                   </Box>
                 )}

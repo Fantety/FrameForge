@@ -15,11 +15,21 @@ class PromptGenerationRequest(BaseModel):
     user_request: str
 
 
+class AnimationGenerationRequest(BaseModel):
+    prompt: str
+    first_frame: Optional[str] = None
+    resolution: Optional[str] = "1080p"
+    duration: Optional[int] = 5
+    camera_fixed: Optional[bool] = False
+    watermark: Optional[bool] = True
+
+
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 import os
 import requests
 from datetime import datetime
+import time
 # 通过 pip install 'volcengine-python-sdk[ark]' 安装方舟SDK
 from volcenginesdkarkruntime import Ark
 
@@ -143,6 +153,89 @@ if os.path.isdir(frontend_build_path):
                 raise he
             except Exception as e:
                 print(f"提示词生成过程中发生错误: {str(e)}")
+                raise HTTPException(status_code=500, detail=str(e))
+        
+        # 添加动画生成API端点
+        @app.options("/api/generate-animation")
+        def generate_animation_options():
+            return {"status": "ok"}
+
+        @app.post("/api/generate-animation")
+        def generate_animation(request: AnimationGenerationRequest):
+            prompt = request.prompt
+            first_frame = request.first_frame
+            resolution = request.resolution
+            duration = request.duration
+            camera_fixed = request.camera_fixed
+            watermark = request.watermark
+            
+            try:
+                print(f"收到动画生成请求: prompt={prompt}, first_frame={first_frame}, resolution={resolution}, duration={duration}, camera_fixed={camera_fixed}, watermark={watermark}")
+                
+                # 验证参数
+                if not prompt or len(prompt.strip()) == 0:
+                    raise HTTPException(status_code=400, detail="Prompt不能为空")
+                
+                # 构建参数字符串
+                params_str = f" --resolution {resolution}  --duration {duration} --camerafixed {str(camera_fixed).lower()} --watermark {str(watermark).lower()}"
+                full_prompt = prompt + params_str
+                
+                # 准备内容数组
+                content = [
+                    {
+                        "type": "text",
+                        "text": full_prompt
+                    }
+                ]
+                
+                # 如果提供了首帧图片URL，则添加到内容中
+                if first_frame and first_frame.strip():
+                    content.append(
+                        {
+                            "type": "image_url",
+                            "image_url": {
+                                "url": first_frame.strip()
+                            }
+                        }
+                    )
+                
+                # 调用动画生成API
+                create_result = client.content_generation.tasks.create(
+                    model="doubao-seedance-1-0-pro-250528",
+                    content=content
+                )
+                
+                # 获取任务ID
+                task_id = create_result.id
+                print(f"动画生成任务已创建，任务ID: {task_id}")
+                
+                # 轮询查询任务状态
+                while True:
+                    get_result = client.content_generation.tasks.get(task_id=task_id)
+                    status = get_result.status
+                    
+                    if status == "succeeded":
+                        print("动画生成任务成功完成")
+                        # 获取视频URL
+                        video_url = get_result.content.video_url.strip()
+                        print(f"视频URL: {video_url}")
+                        
+                        # 返回视频URL
+                        return {"video_url": video_url}
+                    elif status == "failed":
+                        print("动画生成任务失败")
+                        error_msg = get_result.error.message if get_result.error else "未知错误"
+                        raise HTTPException(status_code=500, detail=f"动画生成失败: {error_msg}")
+                    else:
+                        print(f"当前任务状态: {status}, 3秒后重试...")
+                        import time
+                        time.sleep(3)
+                        
+            except HTTPException as he:
+                print(f"HTTP异常: {he.detail}")
+                raise he
+            except Exception as e:
+                print(f"动画生成过程中发生错误: {str(e)}")
                 raise HTTPException(status_code=500, detail=str(e))
         
         # 挂载静态文件服务到根路径

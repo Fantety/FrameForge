@@ -27,12 +27,33 @@ const AnimationGeneration = () => {
   const handleGenerate = async () => {
     setLoading(true);
     try {
-      // 模拟API调用
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      // 模拟生成的动画URL
-      setGeneratedAnimation('https://sample-videos.com/gif/1.gif');
+      // 调用后端API生成动画
+      const response = await fetch('http://localhost:8000/api/generate-animation', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          prompt,
+          first_frame: firstFrame,
+          resolution,
+          duration,
+          camera_fixed: cameraFixed,
+          watermark
+        })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.detail || `HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      setGeneratedAnimation(data.video_url);
     } catch (error) {
       console.error('生成动画时出错:', error);
+      // 显示错误消息给用户
+      alert(`生成动画时出错: ${error.message}`);
     } finally {
       setLoading(false);
     }
@@ -537,11 +558,29 @@ const AnimationGeneration = () => {
             </Button>
           </Box>
           <Card>
-            <CardMedia
-              component="img"
-              image={generatedAnimation}
-              alt="Generated animation"
-            />
+            {generatedAnimation ? (
+              (generatedAnimation.endsWith('.mp4') || generatedAnimation.includes('.mp4?')) ? (
+                <CardMedia
+                  component="video"
+                  src={generatedAnimation}
+                  controls
+                  autoPlay
+                  loop
+                  sx={{ width: '100%', height: 'auto' }}
+                />
+              ) : (
+                <CardMedia
+                  component="img"
+                  image={generatedAnimation}
+                  alt="Generated animation"
+                  sx={{ width: '100%', height: 'auto' }}
+                />
+              )
+            ) : (
+              <Typography variant="body1" sx={{ color: 'white', textAlign: 'center', padding: 2 }}>
+                无法加载动画
+              </Typography>
+            )}
           </Card>
         </Paper>
       )}

@@ -1,5 +1,5 @@
-import React, { useState, useRef } from 'react';
-import { Box, Typography, Paper, Button, TextField, FormControl, InputLabel, Select, MenuItem, Slider, FormControlLabel, Switch, Card, CardMedia, CircularProgress, LinearProgress, Modal, IconButton, Divider, Grid } from '@mui/material';
+import React, { useState, useRef, useEffect } from 'react';
+import { Box, Typography, Paper, Button, TextField, FormControl, InputLabel, Select, MenuItem, Slider, FormControlLabel, Switch, Card, CardMedia, CircularProgress, LinearProgress, Modal, IconButton, Divider, Grid, Checkbox } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import PreviewIcon from '@mui/icons-material/Preview';
 
@@ -29,6 +29,7 @@ const AnimationGeneration = () => {
   const [frameCount, setFrameCount] = useState(10);
   const [splittingFrames, setSplittingFrames] = useState(false);
   const [splitFrames, setSplitFrames] = useState([]);
+  const [selectedFrames, setSelectedFrames] = useState([]); // 新增：跟踪选中的帧
   const [framePreviewIndex, setFramePreviewIndex] = useState(0);
 
   const handleGenerate = async () => {
@@ -114,6 +115,11 @@ const AnimationGeneration = () => {
     }
   };
 
+  // 当splitFrames更新时，自动更新selectedFrames，确保默认全部选中
+  useEffect(() => {
+    setSelectedFrames(splitFrames.map((_, index) => index));
+  }, [splitFrames]);
+
   // 处理帧拆分
   const handleSplitFrames = async () => {
     if (!generatedAnimation) {
@@ -159,17 +165,51 @@ const AnimationGeneration = () => {
     setSplitFrames(newFrames);
   };
 
+  // 处理帧选中/取消选中
+  const toggleFrameSelection = (index) => {
+    setSelectedFrames(prev => {
+      if (prev.includes(index)) {
+        // 如果已选中，则取消选中
+        return prev.filter(i => i !== index);
+      } else {
+        // 如果未选中，则选中
+        return [...prev, index];
+      }
+    });
+  };
+
+  // 全选/取消全选
+  const toggleSelectAll = () => {
+    if (selectedFrames.length === splitFrames.length) {
+      // 如果全部选中，则取消全选
+      setSelectedFrames([]);
+    } else {
+      // 否则全选
+      setSelectedFrames(splitFrames.map((_, index) => index));
+    }
+  };
+
   // 预览帧动画
   const previewFrameAnimation = () => {
-    if (splitFrames.length === 0) return;
+    if (selectedFrames.length === 0) return;
 
+    // 重置预览索引为第一个选中的帧
+    setFramePreviewIndex(selectedFrames[0]);
+    
     const interval = setInterval(() => {
       setFramePreviewIndex(prevIndex => {
-        if (prevIndex >= splitFrames.length - 1) {
+        // 获取当前预览的选中帧索引
+        const currentSelectedIndex = selectedFrames.indexOf(prevIndex);
+        
+        // 如果是最后一个选中的帧，则回到第一个选中的帧
+        if (currentSelectedIndex >= selectedFrames.length - 1) {
           clearInterval(interval);
-          return 0;
+          return selectedFrames[0];
         }
-        return prevIndex + 1;
+        
+        // 否则播放下一个选中的帧
+        const nextSelectedIndex = selectedFrames[currentSelectedIndex + 1];
+        return nextSelectedIndex;
       });
     }, 500);
   };
@@ -726,18 +766,54 @@ const AnimationGeneration = () => {
                   <Typography variant="h6" gutterBottom sx={{ color: 'white' }}>
                     拆分的帧图片
                   </Typography>
+                  <Button
+                    variant="contained"
+                    onClick={toggleSelectAll}
+                    sx={{
+                      background: 'linear-gradient(45deg, #ff4500, #ffa500)',
+                      color: '#333',
+                      fontWeight: 'bold',
+                      padding: '5px 15px',
+                      borderRadius: '50px'
+                    }}
+                  >
+                    {selectedFrames.length === splitFrames.length ? '取消全选' : '全选'}
+                  </Button>
                 </Box>
                 <Grid container spacing={2}>
                   {splitFrames.map((frame, index) => (
                     <Grid item key={index}>
-                      <Card sx={{ width: 150, height: 150, cursor: 'pointer' }} onClick={() => moveFrame(index, 0)}>
-                        <CardMedia
-                          component="img"
-                          image={frame}
-                          alt={`Frame ${index}`}
-                          sx={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                      <Box sx={{ position: 'relative', display: 'inline-block' }}>
+                        <Card 
+                          sx={{ 
+                            width: 150, 
+                            height: 150, 
+                            cursor: 'pointer',
+                            border: selectedFrames.includes(index) ? '3px solid #ff4500' : 'none'
+                          }} 
+                          onClick={() => moveFrame(index, 0)}
+                        >
+                          <CardMedia
+                            component="img"
+                            image={frame}
+                            alt={`Frame ${index}`}
+                            sx={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                          />
+                        </Card>
+                        <Checkbox
+                          checked={selectedFrames.includes(index)}
+                          onChange={() => toggleFrameSelection(index)}
+                          sx={{
+                            position: 'absolute',
+                            top: 4,
+                            left: 4,
+                            color: '#ff4500',
+                            '&.Mui-checked': {
+                              color: '#ff4500',
+                            }
+                          }}
                         />
-                      </Card>
+                      </Box>
                       <Typography variant="body2" align="center" sx={{ color: 'white', marginTop: 1 }}>
                         帧 {index + 1}
                       </Typography>
@@ -757,7 +833,7 @@ const AnimationGeneration = () => {
                       />
                     </Card>
                     <Typography variant="body1" sx={{ color: 'white', marginTop: 1 }}>
-                      预览帧 {framePreviewIndex + 1}/{splitFrames.length}
+                      预览帧 {framePreviewIndex + 1}/{splitFrames.length} (选中 {selectedFrames.length} 帧)
                     </Typography>
                     <Button
                       variant="contained"

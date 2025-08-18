@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { Box, Typography, Paper, Button, TextField, FormControl, InputLabel, Select, MenuItem, Slider, FormControlLabel, Switch, Card, CardMedia, CircularProgress, LinearProgress, Modal, IconButton } from '@mui/material';
+import { Box, Typography, Paper, Button, TextField, FormControl, InputLabel, Select, MenuItem, Slider, FormControlLabel, Switch, Card, CardMedia, CircularProgress, LinearProgress, Modal, IconButton, Divider, Grid } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import PreviewIcon from '@mui/icons-material/Preview';
 
@@ -23,6 +23,13 @@ const AnimationGeneration = () => {
   const [previewImage, setPreviewImage] = useState('');
   const previewButtonRef = useRef(null);
   const [previewPosition, setPreviewPosition] = useState({ top: 0, left: 0 });
+
+  // 帧拆分相关状态
+  const [frameInterval, setFrameInterval] = useState(1);
+  const [frameCount, setFrameCount] = useState(10);
+  const [splittingFrames, setSplittingFrames] = useState(false);
+  const [splitFrames, setSplitFrames] = useState([]);
+  const [framePreviewIndex, setFramePreviewIndex] = useState(0);
 
   const handleGenerate = async () => {
     setLoading(true);
@@ -105,6 +112,66 @@ const AnimationGeneration = () => {
     } finally {
       setDownloading(false);
     }
+  };
+
+  // 处理帧拆分
+  const handleSplitFrames = async () => {
+    if (!generatedAnimation) {
+      alert('请先生成动画');
+      return;
+    }
+
+    setSplittingFrames(true);
+    try {
+      // 调用后端API进行帧拆分
+      const response = await fetch('http://localhost:8000/api/split-frames', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          video_url: generatedAnimation,
+          interval: frameInterval,
+          count: frameCount
+        })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.detail || `HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      setSplitFrames(data.frames);
+    } catch (error) {
+      console.error('帧拆分时出错:', error);
+      alert(`帧拆分时出错: ${error.message}`);
+    } finally {
+      setSplittingFrames(false);
+    }
+  };
+
+  // 处理帧图片顺序调整
+  const moveFrame = (fromIndex, toIndex) => {
+    const newFrames = [...splitFrames];
+    const [movedFrame] = newFrames.splice(fromIndex, 1);
+    newFrames.splice(toIndex, 0, movedFrame);
+    setSplitFrames(newFrames);
+  };
+
+  // 预览帧动画
+  const previewFrameAnimation = () => {
+    if (splitFrames.length === 0) return;
+
+    const interval = setInterval(() => {
+      setFramePreviewIndex(prevIndex => {
+        if (prevIndex >= splitFrames.length - 1) {
+          clearInterval(interval);
+          return 0;
+        }
+        return prevIndex + 1;
+      });
+    }, 500);
   };
 
   const modalStyle = {
@@ -582,6 +649,135 @@ const AnimationGeneration = () => {
               </Typography>
             )}
           </Card>
+
+          {/* 帧拆分功能 */}
+          <Box sx={{ marginTop: 3 }}>
+            <Divider sx={{ borderColor: '#ff4500', marginBottom: 2 }} />
+            <Typography variant="h6" gutterBottom sx={{ color: 'white' }}>
+              帧拆分
+            </Typography>
+            <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', marginBottom: 2 }}>
+              <TextField
+                label="帧间隔"
+                type="number"
+                value={frameInterval}
+                onChange={(e) => setFrameInterval(parseFloat(e.target.value) || 0.1)}
+                InputProps={{ inputProps: { min: 0.1, step: 0.1 } }}
+                sx={{
+                  width: 150,
+                  '& .MuiInputBase-input': { color: 'white' },
+                  '& .MuiInputLabel-root': { color: 'white' },
+                  '& .MuiOutlinedInput-root': {
+                    '& fieldset': {
+                      borderColor: '#ff4500',
+                    },
+                    '&:hover fieldset': {
+                      borderColor: '#ffa500',
+                    },
+                    '&.Mui-focused fieldset': {
+                      borderColor: '#ffa500',
+                    },
+                  }
+                }}
+              />
+              <TextField
+                label="帧数量"
+                type="number"
+                value={frameCount}
+                onChange={(e) => setFrameCount(parseInt(e.target.value) || 10)}
+                InputProps={{ inputProps: { min: 1 } }}
+                sx={{
+                  width: 150,
+                  '& .MuiInputBase-input': { color: 'white' },
+                  '& .MuiInputLabel-root': { color: 'white' },
+                  '& .MuiOutlinedInput-root': {
+                    '& fieldset': {
+                      borderColor: '#ff4500',
+                    },
+                    '&:hover fieldset': {
+                      borderColor: '#ffa500',
+                    },
+                    '&.Mui-focused fieldset': {
+                      borderColor: '#ffa500',
+                    },
+                  }
+                }}
+              />
+              <Button
+                variant="contained"
+                onClick={handleSplitFrames}
+                disabled={splittingFrames}
+                sx={{
+                  background: 'linear-gradient(45deg, #ff4500, #ffa500)',
+                  color: '#333',
+                  fontWeight: 'bold',
+                  padding: '10px 20px',
+                  borderRadius: '50px'
+                }}
+              >
+                {splittingFrames ? '拆分中...' : '帧拆分'}
+              </Button>
+            </Box>
+
+            {/* 拆分的帧图片展示 */}
+            {splitFrames.length > 0 && (
+              <Box sx={{ marginTop: 3 }}>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 2 }}>
+                  <Typography variant="h6" gutterBottom sx={{ color: 'white' }}>
+                    拆分的帧图片
+                  </Typography>
+                </Box>
+                <Grid container spacing={2}>
+                  {splitFrames.map((frame, index) => (
+                    <Grid item key={index}>
+                      <Card sx={{ width: 150, height: 150, cursor: 'pointer' }} onClick={() => moveFrame(index, 0)}>
+                        <CardMedia
+                          component="img"
+                          image={frame}
+                          alt={`Frame ${index}`}
+                          sx={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                        />
+                      </Card>
+                      <Typography variant="body2" align="center" sx={{ color: 'white', marginTop: 1 }}>
+                        帧 {index + 1}
+                      </Typography>
+                    </Grid>
+                  ))}
+                </Grid>
+                
+                {/* 帧预览 */}
+                {splitFrames.length > 0 && (
+                  <Box sx={{ marginTop: 3, textAlign: 'center' }}>
+                    <Card sx={{ width: 300, height: 300, margin: '0 auto' }}>
+                      <CardMedia
+                        component="img"
+                        image={splitFrames[framePreviewIndex]}
+                        alt={`Preview Frame ${framePreviewIndex + 1}`}
+                        sx={{ width: '100%', height: '100%', objectFit: 'contain' }}
+                      />
+                    </Card>
+                    <Typography variant="body1" sx={{ color: 'white', marginTop: 1 }}>
+                      预览帧 {framePreviewIndex + 1}/{splitFrames.length}
+                    </Typography>
+                    <Button
+                      variant="contained"
+                      onClick={previewFrameAnimation}
+                      sx={{
+                        background: 'linear-gradient(45deg, #ff4500, #ffa500)',
+                        color: '#333',
+                        fontWeight: 'bold',
+                        padding: '5px 15px',
+                        borderRadius: '50px',
+                        marginTop: 2
+                      }}
+                    >
+                      预览动画
+                    </Button>
+                  </Box>
+                )}
+              </Box>
+            )}
+          </Box>
         </Paper>
       )}
     </Box>

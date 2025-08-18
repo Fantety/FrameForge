@@ -1,35 +1,18 @@
 from fastapi import FastAPI, HTTPException, Body
 from pydantic import BaseModel
-from typing import Optional
-
-
-class ImageGenerationRequest(BaseModel):
-    prompt: str
-    size: Optional[str] = "512x512"
-    guidance_scale: Optional[float] = 2.5
-    seed: Optional[int] = 12345
-    watermark: Optional[bool] = True
-
-
-class PromptGenerationRequest(BaseModel):
-    user_request: str
-
-
-class AnimationGenerationRequest(BaseModel):
-    prompt: str
-    first_frame: Optional[str] = None
-    resolution: Optional[str] = "1080p"
-    duration: Optional[int] = 5
-    camera_fixed: Optional[bool] = False
-    watermark: Optional[bool] = True
-
-
-from fastapi.staticfiles import StaticFiles
-from fastapi.middleware.cors import CORSMiddleware
+from typing import Optional, List
 import os
 import requests
-from datetime import datetime
+from datetime import datetime, timedelta
 import time
+import cv2
+import numpy as np
+import urllib.request
+from fastapi.staticfiles import StaticFiles
+from fastapi.middleware.cors import CORSMiddleware
+import threading
+import shutil
+
 # 通过 pip install 'volcengine-python-sdk[ark]' 安装方舟SDK
 from volcenginesdkarkruntime import Ark
 
@@ -40,6 +23,29 @@ client = Ark(
     # 请将您的 API Key 存储在环境变量 ARK_API_KEY 中
     api_key="37939eeb-b9ba-44e5-bf3d-3f4d4a2bc32a",
 )
+
+class ImageGenerationRequest(BaseModel):
+    prompt: str
+    size: Optional[str] = "512x512"
+    guidance_scale: Optional[float] = 2.5
+    seed: Optional[int] = 12345
+    watermark: Optional[bool] = True
+
+class PromptGenerationRequest(BaseModel):
+    user_request: str
+
+class AnimationGenerationRequest(BaseModel):
+    prompt: str
+    first_frame: Optional[str] = None
+    resolution: Optional[str] = "1080p"
+    duration: Optional[int] = 5
+    camera_fixed: Optional[bool] = False
+    watermark: Optional[bool] = True
+
+class FrameSplitRequest(BaseModel):
+    video_url: str
+    interval: float = 1.0
+    count: int = 10
 
 app = FastAPI()
 
@@ -55,6 +61,13 @@ app.add_middleware(
     max_age=600,
 )
 
+# 创建帧图片目录
+frames_dir = os.path.join(os.path.dirname(__file__), "frames")
+os.makedirs(frames_dir, exist_ok=True)
+
+# 挂载帧图片目录为静态文件服务
+app.mount("/frames", StaticFiles(directory=frames_dir), name="frames")
+
 # 检查前端依赖和构建
 current_dir = os.path.dirname(__file__)
 frontend_dir = os.path.join(current_dir, "..", "frontend")
@@ -67,6 +80,105 @@ print(f"检查前端构建路径: {frontend_build_path}")
 print(f"node_modules是否存在: {os.path.isdir(node_modules_path)}")
 print(f"构建路径是否存在: {os.path.isdir(frontend_build_path)}")
 
+# 清理旧帧图片的函数
+def cleanup_old_frames():
+    while True:
+        try:
+            # 获取当前时间
+            now = datetime.now()
+            # 计算24小时前的时间
+            cutoff_time = now - timedelta(hours=24)
+            
+            # 遍历帧图片目录
+            for item in os.listdir(frames_dir):
+                item_path = os.path.join(frames_dir, item)
+                # 检查是否为目录
+                if os.path.isdir(item_path):
+                    # 获取目录的修改时间
+                    mod_time = datetime.fromtimestamp(os.path.getmtime(item_path))
+                    # 如果目录的修改时间在24小时前，则删除
+                    if mod_time < cutoff_time:
+                        shutil.rmtree(item_path)
+                        print(f"已删除旧帧图片目录: {item_path}")
+            
+            # 等待1小时再执行下一次清理
+            time.sleep(3600)
+        except Exception as e:
+            print(f"清理旧帧图片时发生错误: {str(e)}")
+            # 如果发生错误，等待10分钟再重试
+            time.sleep(600)
+
+# 启动清理线程
+threading.Thread(target=cleanup_old_frames, daemon=True).start()
+
+# 帧拆分功能
+@app.post("/api/split-frames")
+def split_frames(request: FrameSplitRequest):
+    try:
+        print(f"收到帧拆分请求: video_url={request.video_url}, interval={request.interval}, count={request.count}")
+        
+        # 下载视频文件到临时位置
+        temp_video_path = f"temp_video_{int(time.time())}.mp4"
+        urllib.request.urlretrieve(request.video_url, temp_video_path)
+        
+        # 使用OpenCV读取视频
+        cap = cv2.VideoCapture(temp_video_path)
+        
+        if not cap.isOpened():
+            raise HTTPException(status_code=500, detail="无法打开视频文件")
+        
+        # 获取视频的帧率
+        fps = cap.get(cv2.CAP_PROP_FPS)
+        print(f"视频帧率: {fps}")
+        
+        frames = []
+        frame_index = 0
+        extracted_count = 0
+        
+        # 计算帧间隔（以帧为单位）
+        frame_interval = max(1, int(fps * request.interval))
+        print(f"计算的帧间隔: {frame_interval} (基于{request.interval}秒间隔)")
+        
+        # 生成唯一的帧图片目录
+        timestamp = int(time.time())
+        frame_dir_name = f"frames_{timestamp}"
+        frame_dir_path = os.path.join(frames_dir, frame_dir_name)
+        os.makedirs(frame_dir_path, exist_ok=True)
+        
+        while True:
+            ret, frame = cap.read()
+            if not ret:
+                break
+                
+            # 根据间隔提取帧
+            if frame_index % frame_interval == 0 and extracted_count < request.count:
+                # 保存帧为图片
+                frame_filename = f"frame_{extracted_count}.jpg"
+                frame_filepath = os.path.join(frame_dir_path, frame_filename)
+                cv2.imwrite(frame_filepath, frame)
+                
+                # 生成可访问的URL
+                frame_url = f"http://localhost:8000/frames/{frame_dir_name}/{frame_filename}"
+                frames.append(frame_url)
+                extracted_count += 1
+                
+            frame_index += 1
+            
+        cap.release()
+        
+        # 删除临时视频文件
+        os.remove(temp_video_path)
+        
+        print(f"成功提取 {len(frames)} 帧图片")
+        # 返回帧图片URL
+        return {"frames": frames}
+        
+    except HTTPException as he:
+        print(f"HTTP异常: {he.detail}")
+        raise he
+    except Exception as e:
+        print(f"帧拆分过程中发生错误: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
 if os.path.isdir(frontend_build_path):
     # 确保build目录包含index.html
     index_html_path = os.path.join(frontend_build_path, "index.html")

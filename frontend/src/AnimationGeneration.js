@@ -31,6 +31,9 @@ const AnimationGeneration = () => {
   const [splitFrames, setSplitFrames] = useState([]);
   const [selectedFrames, setSelectedFrames] = useState([]); // 新增：跟踪选中的帧
   const [framePreviewIndex, setFramePreviewIndex] = useState(0);
+  const [playbackSpeed, setPlaybackSpeed] = useState(500); // 播放速度，单位毫秒
+  const [loopPlayback, setLoopPlayback] = useState(false); // 是否循环播放
+  const [playbackInterval, setPlaybackInterval] = useState(null); // 当前播放间隔
 
   const handleGenerate = async () => {
     setLoading(true);
@@ -120,6 +123,15 @@ const AnimationGeneration = () => {
     setSelectedFrames(splitFrames.map((_, index) => index));
   }, [splitFrames]);
 
+  // 在组件卸载时清除播放间隔
+  useEffect(() => {
+    return () => {
+      if (playbackInterval) {
+        clearInterval(playbackInterval);
+      }
+    };
+  }, [playbackInterval]);
+
   // 处理帧拆分
   const handleSplitFrames = async () => {
     if (!generatedAnimation) {
@@ -193,6 +205,11 @@ const AnimationGeneration = () => {
   const previewFrameAnimation = () => {
     if (selectedFrames.length === 0) return;
 
+    // 清除之前的播放间隔
+    if (playbackInterval) {
+      clearInterval(playbackInterval);
+    }
+
     // 重置预览索引为第一个选中的帧
     setFramePreviewIndex(selectedFrames[0]);
     
@@ -201,17 +218,27 @@ const AnimationGeneration = () => {
         // 获取当前预览的选中帧索引
         const currentSelectedIndex = selectedFrames.indexOf(prevIndex);
         
-        // 如果是最后一个选中的帧，则回到第一个选中的帧
+        // 如果是最后一个选中的帧
         if (currentSelectedIndex >= selectedFrames.length - 1) {
-          clearInterval(interval);
-          return selectedFrames[0];
+          if (loopPlayback) {
+            // 如果开启循环，回到第一个选中的帧
+            return selectedFrames[0];
+          } else {
+            // 如果不循环，停止播放
+            clearInterval(interval);
+            setPlaybackInterval(null);
+            return selectedFrames[0];
+          }
         }
         
         // 否则播放下一个选中的帧
         const nextSelectedIndex = selectedFrames[currentSelectedIndex + 1];
         return nextSelectedIndex;
       });
-    }, 500);
+    }, playbackSpeed);
+    
+    // 保存当前播放间隔
+    setPlaybackInterval(interval);
   };
 
   const modalStyle = {
@@ -835,6 +862,60 @@ const AnimationGeneration = () => {
                     <Typography variant="body1" sx={{ color: 'white', marginTop: 1 }}>
                       预览帧 {framePreviewIndex + 1}/{splitFrames.length} (选中 {selectedFrames.length} 帧)
                     </Typography>
+                    <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, alignItems: 'center', marginTop: 2 }}>
+                      <TextField
+                        label="播放速度(ms)"
+                        type="number"
+                        value={playbackSpeed}
+                        onChange={(e) => setPlaybackSpeed(parseInt(e.target.value) || 500)}
+                        InputProps={{ inputProps: { min: 100, max: 2000, step: 100 } }}
+                        sx={{
+                          width: 150,
+                          '& .MuiInputBase-input': { color: 'white' },
+                          '& .MuiInputLabel-root': { color: 'white' },
+                          '& .MuiOutlinedInput-root': {
+                            '& fieldset': {
+                              borderColor: '#ff4500',
+                            },
+                            '&:hover fieldset': {
+                              borderColor: '#ffa500',
+                            },
+                            '&.Mui-focused fieldset': {
+                              borderColor: '#ffa500',
+                            },
+                          }
+                        }}
+                      />
+                      <FormControlLabel
+                        control={
+                          <Switch 
+                            checked={loopPlayback} 
+                            onChange={(e) => setLoopPlayback(e.target.checked)}
+                            sx={{
+                              '& .MuiSwitch-switchBase.Mui-checked': {
+                                color: '#ff4500',
+                                '&:hover': {
+                                  backgroundColor: 'rgba(255, 69, 0, 0.08)',
+                                },
+                              },
+                              '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
+                                background: 'linear-gradient(90deg, #ff4500, #ffa500)',
+                              },
+                            }} 
+                          />
+                        }
+                        sx={{
+                          color: 'white',
+                          '& .MuiFormControlLabel-label': {
+                            background: 'linear-gradient(90deg, #ff4500, #ffa500)',
+                            WebkitBackgroundClip: 'text',
+                            WebkitTextFillColor: 'transparent',
+                            fontWeight: 'bold'
+                          }
+                        }}
+                        label="循环播放"
+                      />
+                    </Box>
                     <Button
                       variant="contained"
                       onClick={previewFrameAnimation}

@@ -374,9 +374,6 @@ const AnimationGeneration = () => {
                 rows={3}
                 variant="outlined"
                 value={generatedPrompt}
-                InputProps={{
-                  readOnly: true,
-                }}
                 sx={{
                   mb: 2,
                   '& .MuiInputBase-input': { color: 'white' },

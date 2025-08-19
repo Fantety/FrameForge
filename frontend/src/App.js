@@ -4,6 +4,7 @@ import './App.css';
 import Sidebar from './Sidebar';
 import ImageGeneration from './ImageGeneration';
 import AnimationGeneration from './AnimationGeneration';
+import ChiptuneGeneration from './ChiptuneGeneration';
 
 function App() {
   const navigate = useNavigate();
@@ -64,6 +65,8 @@ export function CreatePage() {
         return <ImageGeneration />;
       case 'animation':
         return <AnimationGeneration />;
+      case 'chiptune':
+        return <ChiptuneGeneration />;
       default:
         return <ImageGeneration />;
     }

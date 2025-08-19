@@ -2,6 +2,7 @@ import React from 'react';
 import { Drawer, List, ListItem, ListItemIcon, ListItemText, Divider, Typography } from '@mui/material';
 import ImageIcon from '@mui/icons-material/Image';
 import AnimationIcon from '@mui/icons-material/Animation';
+import MusicNoteIcon from '@mui/icons-material/MusicNote';
 
 const Sidebar = ({ activeSection, onSectionChange }) => {
   return (
@@ -60,6 +61,25 @@ const Sidebar = ({ activeSection, onSectionChange }) => {
             <AnimationIcon />
           </ListItemIcon>
           <ListItemText primary="动画生成" />
+        </ListItem>
+        
+        <ListItem 
+          button 
+          selected={activeSection === 'chiptune'}
+          onClick={() => onSectionChange('chiptune')}
+          sx={{ 
+            '&.Mui-selected': { 
+              backgroundColor: 'rgba(139, 0, 139, 0.3)' 
+            },
+            '&:hover': { 
+              backgroundColor: 'rgba(255, 69, 0, 0.1)' 
+            }
+          }}
+        >
+          <ListItemIcon sx={{ color: 'white' }}>
+            <MusicNoteIcon />
+          </ListItemIcon>
+          <ListItemText primary="Chiptune音乐生成" />
         </ListItem>
       </List>
       

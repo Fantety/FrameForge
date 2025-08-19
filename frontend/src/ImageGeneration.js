@@ -4,7 +4,7 @@
  * @Descripttion: 
  * @Date: 2025-08-17 18:05:29
  * @LastEditors: Fantety
- * @LastEditTime: 2025-08-18 11:06:49
+ * @LastEditTime: 2025-08-18 18:29:28
  */
 import React, { useState, useRef, useEffect } from 'react';
 import { Box, Typography, Paper, Button, TextField, FormControl, InputLabel, Select, MenuItem, Slider, FormControlLabel, Switch, Card, CardMedia, CircularProgress, LinearProgress, Modal, IconButton } from '@mui/material';
@@ -235,6 +235,8 @@ const ImageGeneration = () => {
               <CircularProgress
                 size={24}
                 sx={{
+                  '& .MuiInputBase-input': { color: 'white' },
+                  '& .MuiInputLabel-root': { color: 'white' },
                   position: 'absolute',
                   top: '50%',
                   left: '50%',
@@ -259,8 +261,20 @@ const ImageGeneration = () => {
                 multiline
                 rows={3}
                 variant="outlined"
-                InputProps={{
-                  readOnly: true,
+                sx={{
+                  '& .MuiInputBase-input': { color: 'white' },
+                  '& .MuiInputLabel-root': { color: 'white' },
+                  '& .MuiOutlinedInput-root': {
+                    '& fieldset': {
+                      borderColor: '#ff4500',
+                    },
+                    '&:hover fieldset': {
+                      borderColor: '#ffa500',
+                    },
+                    '&.Mui-focused fieldset': {
+                      borderColor: '#ffa500',
+                    },
+                  }
                 }}
               />
               <Button

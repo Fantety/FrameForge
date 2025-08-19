@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, Body
+from fastapi import FastAPI, HTTPException, Body, Response
 from pydantic import BaseModel
 from typing import Optional, List
 import os
@@ -13,6 +13,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 import threading
 import shutil
+from chiptune_generation import MusicGenerationRequest, generate_music
 
 # 通过 pip install 'volcengine-python-sdk[ark]' 安装方舟SDK
 from volcenginesdkarkruntime import Ark
@@ -356,6 +357,37 @@ if os.path.isdir(frontend_build_path):
                 raise he
             except Exception as e:
                 print(f"动画生成过程中发生错误: {str(e)}")
+                raise HTTPException(status_code=500, detail=str(e))
+        
+        # 添加Chiptune音乐生成API端点
+        @app.options("/api/generate-chiptune")
+        def generate_chiptune_options():
+            return {"status": "ok"}
+
+        @app.post("/api/generate-chiptune")
+        def generate_chiptune_endpoint(request: MusicGenerationRequest):
+            prompt = request.prompt
+            bpm = request.bpm
+            
+            try:
+                print(f"收到Chiptune音乐生成请求: prompt={prompt}, bpm={bpm}")
+                
+                # 验证参数
+                if not prompt or len(prompt.strip()) == 0:
+                    raise HTTPException(status_code=400, detail="Prompt不能为空")
+                
+                # 调用音乐生成函数
+                mp3_data = generate_music(prompt, bpm)
+                
+                # 返回MP3数据
+                return Response(content=mp3_data, media_type="audio/mpeg", headers={
+                    "Content-Disposition": "attachment; filename=generated_music.mp3"
+                })
+            except HTTPException as he:
+                print(f"HTTP异常: {he.detail}")
+                raise he
+            except Exception as e:
+                print(f"Chiptune音乐生成过程中发生错误: {str(e)}")
                 raise HTTPException(status_code=500, detail=str(e))
         
         # 挂载静态文件服务到根路径

@@ -480,20 +480,42 @@ const ImageGeneration = () => {
             <Typography variant="h6" gutterBottom sx={{ color: 'white' }}>
               生成的图像
             </Typography>
-            <Button
-              variant="contained"
-              onClick={handleDownload}
-              disabled={downloading}
-              sx={{
-                background: 'linear-gradient(45deg, #ff4500, #ffa500)',
-                color: '#333',
-                fontWeight: 'bold',
-                padding: '10px 20px',
-                borderRadius: '50px'
-              }}
-            >
-              {downloading ? '下载中...' : '下载图像'}
-            </Button>
+            <Box sx={{ display: 'flex', gap: 2 }}>
+              <Button
+                variant="contained"
+                onClick={handleDownload}
+                disabled={downloading}
+                sx={{
+                  background: 'linear-gradient(45deg, #ff4500, #ffa500)',
+                  color: '#333',
+                  fontWeight: 'bold',
+                  padding: '10px 20px',
+                  borderRadius: '50px'
+                }}
+              >
+                {downloading ? '下载中...' : '下载图像'}
+              </Button>
+              <Button
+                variant="contained"
+                onClick={() => {
+                  // 跳转到动画生成页面，并传递图像URL
+                  window.location.hash = '#/create';
+                  // 通过localStorage传递图像URL
+                  localStorage.setItem('firstFrameImageUrl', generatedImage);
+                  // 触发自定义事件通知AnimationGeneration组件
+                  window.dispatchEvent(new Event('firstFrameImageUrlUpdated'));
+                }}
+                sx={{
+                  background: 'linear-gradient(45deg, #00c853, #64dd17)',
+                  color: '#333',
+                  fontWeight: 'bold',
+                  padding: '10px 20px',
+                  borderRadius: '50px'
+                }}
+              >
+                制作动画
+              </Button>
+            </Box>
           </Box>
           <Card>
             <CardMedia

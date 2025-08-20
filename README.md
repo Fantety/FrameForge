@@ -72,9 +72,8 @@ python --version
 
 确保这些命令在您的系统PATH中可用。如果命令无法找到，请重新安装相应软件并确保在安装过程中选择了将程序添加到系统PATH的选项。
 
-### 打包方式
+### 构建方式
 
-FrameForge提供两种打包方式：
 
 #### 方式一：完整打包（包含前端构建）
 
@@ -87,49 +86,7 @@ FrameForge提供两种打包方式：
 
 2. 打包完成后，会在项目根目录的`bin`文件夹中生成`frameforge.zip`文件。
 
-3. 分发方法：
-   - 将`frameforge.zip`文件发送给其他用户
-   - 用户解压后，根据操作系统运行相应的启动脚本：
-     - Windows: 双击`start_frameforge.bat`或运行`start_frameforge.bat`
-     - Linux/Mac: 运行`./start_frameforge.sh`
 
-#### 方式二：简化打包（仅后端）
-
-这种方式仅打包后端代码，不包含前端构建，适用于已有前端构建结果或只需要后端的情况。
-
-1. 运行简化打包脚本：
-   ```bash
-   python package_app.py
-   ```
-
-2. 打包完成后，会在项目根目录的`bin`文件夹中生成`frameforge_package.zip`文件。
-
-3. 分发方法：
-   - 将`frameforge_package.zip`文件发送给其他用户
-   - 用户解压后，根据操作系统运行相应的启动脚本：
-     - Windows: 双击`start_frameforge.bat`或运行`start_frameforge.bat`
-     - Linux/Mac: 运行`./start_frameforge.sh`
-
-#### 创建不包含源代码的可执行文件
-
-如果您希望创建不包含Python源代码的可执行文件，可以使用PyInstaller。这将保护您的源代码不被查看。
-
-1. 安装PyInstaller：
-   ```bash
-   pip install pyinstaller
-   ```
-
-2. 运行打包脚本，它会自动创建可执行文件：
-   ```bash
-   python build.py
-   ```
-
-3. 如果您不希望创建可执行文件，可以使用以下命令：
-   ```bash
-   python build.py --no-exe
-   ```
-
-当创建可执行文件时，打包脚本会自动排除Python源代码文件（保留requirements.txt），生成的zip文件将包含可执行文件而不是源代码。
 
 ### 启动应用
 
@@ -137,19 +94,7 @@ FrameForge提供两种打包方式：
 
 #### Windows
 
-双击`start_frameforge.bat`文件，或在命令行中运行：
-
-```cmd
-start_frameforge.bat
-```
-
-#### Linux/Mac
-
-在终端中运行：
-
-```bash
-./start_frameforge.sh
-```
+双击`frameforge.exe`文件
 
 启动后，您可以在浏览器中访问`http://localhost:8000`来使用FrameForge应用。
 
@@ -167,102 +112,62 @@ FrameForge/
 └── README.md
 ```
 
-### 注意事项
+# FrameForge 使用说明
 
-1. 如果您在运行打包脚本时遇到问题，请检查是否已正确安装Node.js和Python，并确保它们已添加到系统PATH中。
-2. 在某些Windows系统上，可能需要以管理员权限运行打包脚本。
-3. 如果您不需要构建前端应用，可以使用简化打包方式（package_app.py），它不会尝试构建前端应用，但需要确保后端代码中的静态文件路径正确配置。
-4. 打包脚本会自动排除后端的frames目录，因为该目录通常包含临时文件，不需要打包分发。
+## 基本流程
 
-1. 分发:
-   将生成的zip文件发送给其他用户，他们解压后即可使用。
+1. **登录火山引擎**
+   
+   - 访问 [火山引擎官网](https://www.volcengine.com/)
+   - 注册或登录您的账户
 
-2. 使用:
-   在解压后的目录中，用户可以运行:
-   - Windows系统: 双击`start_frameforge.bat`或运行`start_frameforge.bat`
-   - Linux/Mac系统: 运行`./start_frameforge.sh`
+2. **激活需要的模型**
+   
+   - 进入火山引擎控制台
+   - 找到需要的AI模型服务（如图像生成、动画生成等）
+   - 按照指引激活相关模型
+   - 以下是必须激活的模型：
+     
+     > doubao-1-5-lite-32k-250115
+     > 
+     > doubao-seedream-3-0-t2i-250415
+     > 
+     > doubao-seedance-1-0-pro-250528
+     > 
+     > doubao-1-5-pro-256k-250115
 
-   应用将在`http://localhost:8000`上启动。
+3. **获取APIKEY**
+   
+   - 在火山引擎控制台中找到API密钥管理页面
+   - 创建一个新的API密钥或使用现有的密钥
+   - 复制您的APIKEY，稍后需要设置为环境变量
 
-   注意：
-   - 如果使用方式一打包，应用将包含完整的前端界面
-   - 如果使用方式二打包且没有前端构建结果，用户需要单独运行前端或通过其他方式提供前端界面
+4. **设置环境变量**
+   
+   - 在Windows系统中设置环境变量：
+     - 右键点击"此电脑" -> "属性" -> "高级系统设置" -> "环境变量"
+     - 在系统变量或用户变量中添加新的变量：
+       - 变量名：ARK_API_KEY
+       - 变量值：您从火山引擎获取的APIKEY
+     - 点击"确定"保存设置
+   - 或者在命令行中临时设置环境变量：
+     
+     ```cmd
+     set ARK_API_KEY=您的APIKEY
+     ```
 
-## 仅运行后端访问Web应用
+5. **启动应用程序**
+   
+   - 双击运行 `frameforge.exe` 文件启动应用程序
+   - 或者在命令行中执行：
+     
+     ```cmd
+     frameforge.exe
+     ```
+   - 应用程序启动后，会在浏览器输入127.0.0.1:8000打开FrameForge界面
 
-您可以通过以下步骤构建前端并仅运行后端来访问完整的Web应用：
+## 注意事项
 
-1. 安装前端依赖 (**重要：这一步不可省略**):
-   ```
-   cd frontend
-   npm install
-   ```
-
-   注意：这一步会安装所有必要的依赖，包括react-scripts。
-   如果省略此步骤，您将看到'react-scripts'命令未识别的错误。
-
-2. 构建前端应用 (**重要：这一步不可省略**):
-   ```
-   npm run build
-   ```
-
-   注意：这一步会创建build文件夹，其中包含所有静态资源。
-   如果省略此步骤，您将在浏览器中看到"Frontend build not found"消息。
-
-3. 运行后端服务器:
-   ```
-   python backend/main.py
-   ```
-
-4. 访问应用:
-   打开浏览器并访问 `http://localhost:8000` 即可查看React前端页面
-
-   如果您看到"Frontend build not found"消息，请确保已完成步骤2。
-
-5. 健康检查:
-   您可以通过访问 `http://localhost:8000/api/health` 来检查后端服务状态
-
-## 分别运行前后端（开发模式）
-
-### 后端
-
-1. 安装后端依赖:
-   ```
-   pip install -r backend/requirements.txt
-   ```
-
-2. 运行后端服务器:
-   ```
-   python backend/main.py
-   ```
-
-3. 访问API:
-   打开浏览器并访问 `http://localhost:8000`
-
-### 前端
-
-1. 确保已安装Node.js (推荐版本14或更高)
-
-2. 安装前端依赖 (**重要：这一步不可省略**):
-   ```
-   cd frontend
-   npm install
-   ```
-
-   注意：这一步会安装所有必要的依赖，包括react-scripts。
-   如果省略此步骤，您将看到'react-scripts'命令未识别的错误。
-
-3. 启动开发服务器:
-   ```
-   npm start
-   ```
-
-   前端将在 `http://localhost:3000` 上运行。
-
-如果遇到任何问题，请尝试清除缓存并重新安装:
-   ```
-   cd frontend
-   rm -rf node_modules package-lock.json
-   npm cache clean --force
-   npm install
-   ```
+- 确保已正确设置环境变量ARK_API_KEY，否则应用程序无法正常工作
+- 如果遇到网络连接问题，请检查防火墙设置
+- 应用程序需要访问互联网以调用火山引擎的AI服务

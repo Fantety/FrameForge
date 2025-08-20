@@ -7,6 +7,29 @@ import JSZip from 'jszip';
 const AnimationGeneration = () => {
   const [prompt, setPrompt] = useState('');
   const [firstFrame, setFirstFrame] = useState('');
+
+  // 在组件加载时检查是否有传递过来的图像URL
+  useEffect(() => {
+    const handleFirstFrameImageUrl = () => {
+      const imageUrl = localStorage.getItem('firstFrameImageUrl');
+      if (imageUrl) {
+        setFirstFrame(imageUrl);
+        // 清除localStorage中的数据
+        localStorage.removeItem('firstFrameImageUrl');
+      }
+    };
+
+    // 检查页面加载时是否有传递的数据
+    handleFirstFrameImageUrl();
+
+    // 监听自定义事件
+    window.addEventListener('firstFrameImageUrlUpdated', handleFirstFrameImageUrl);
+
+    // 清理事件监听器
+    return () => {
+      window.removeEventListener('firstFrameImageUrlUpdated', handleFirstFrameImageUrl);
+    };
+  }, []);
   const [resolution, setResolution] = useState('1080p');
   const [duration, setDuration] = useState(5);
   const [cameraFixed, setCameraFixed] = useState(false);

@@ -12,6 +12,8 @@ body {
   overflow-x: hidden;
   background-size: 400% 400%;
   animation: gradientShift 15s ease infinite;
+  margin: 0;
+  padding: 0;
 }
 
 @keyframes gradientShift {
@@ -22,60 +24,35 @@ body {
 
 /* 几何图形背景 */
 .particle {
-  position: fixed;
-  background: rgba(139, 0, 139, 0.9);
-  pointer-events: none;
+  /* 所有样式都通过JS动态设置，这里只保留基本的堆叠顺序 */
   z-index: -1;
-  opacity: 0.9;
+  pointer-events: none; /* 保持不可点击，不影响其他元素交互 */
 }
 
-.particle:nth-child(1) {
-  width: 30px;
-  height: 30px;
-  top: 10%;
-  left: 20%;
-  animation: floatGeometry 15s infinite ease-in-out;
+/* 不同形状的粒子 */
+.particle-shape-0 {
+  background: rgba(139, 0, 139, 0.7);
   clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
 }
 
-.particle:nth-child(2) {
-  width: 25px;
-  height: 25px;
-  top: 70%;
-  left: 10%;
-  animation: floatGeometry 18s infinite ease-in-out;
-  animation-delay: 2s;
+.particle-shape-1 {
+  background: rgba(255, 69, 0, 0.7);
   clip-path: polygon(20% 0%, 80% 0%, 100% 100%, 0% 100%);
 }
 
-.particle:nth-child(3) {
-  width: 40px;
-  height: 40px;
-  top: 30%;
-  left: 80%;
-  animation: floatGeometry 12s infinite ease-in-out;
-  animation-delay: 1s;
+.particle-shape-2 {
+  background: rgba(0, 198, 255, 0.7);
   clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
 }
 
-.particle:nth-child(4) {
-  width: 20px;
-  height: 20px;
-  top: 80%;
-  left: 70%;
-  animation: floatGeometry 20s infinite ease-in-out;
-  animation-delay: 3s;
+.particle-shape-3 {
+  background: rgba(255, 165, 0, 0.7);
   clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
 }
 
-.particle:nth-child(5) {
-  width: 35px;
-  height: 35px;
-  top: 50%;
-  left: 50%;
-  animation: floatGeometry 16s infinite ease-in-out;
-  animation-delay: 0.5s;
-  clip-path: polygon(50% 0%, 93% 12%, 100% 50%, 93% 87%, 50% 100%, 7% 87%, 0% 50%, 7% 12%);
+.particle-shape-4 {
+  background: rgba(255, 255, 255, 0.7);
+  border-radius: 50%;
 }
 
 @keyframes floatGeometry {
@@ -86,32 +63,88 @@ body {
 }
 
 .container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 20px;
-}
-
-header {
-  text-align: center;
-  padding: 10px 0;
-}
-
-main {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 20vh;
-}
-
-.hero {
-  text-align: center;
   width: 100%;
-  padding: 20px;
-  position: relative;
+  height: 100vh;
+  margin: 0;
+  padding: 0;
   overflow: hidden;
 }
 
-.hero::before {
+.hero-container {
+  display: flex;
+  width: 100%;
+  height: 100vh;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 50px;
+  box-sizing: border-box;
+}
+
+.hero-left {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  padding: 0;
+}
+
+.hero-right {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  padding: 0 20px;
+}
+
+.logo-container {
+  position: relative;
+  display: inline-block;
+  margin-bottom: 15px;
+}
+
+.logo {
+  width: 300px;
+  height: auto;
+  max-width: 100%;
+  transition: all 0.3s ease;
+}
+
+.logo-container:hover .logo {
+  transform: scale(1.03);
+}
+
+.logo-glow {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 110%;
+  height: 110%;
+  background: radial-gradient(circle, rgba(255,69,0,0.4) 0%, rgba(139,0,139,0) 70%);
+  transform: translate(-50%, -50%);
+  filter: blur(15px);
+  z-index: -1;
+  opacity: 0.7;
+  animation: pulse 3s infinite ease-in-out;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.7; transform: translate(-50%, -50%) scale(1); }
+  50% { opacity: 0.9; transform: translate(-50%, -50%) scale(1.05); }
+}
+
+.tagline {
+  font-size: 1.2rem;
+  color: #e6d7ff;
+  text-shadow: 0 0 10px rgba(139, 0, 139, 0.5);
+  margin-bottom: 20px;
+}
+
+/* 背景装饰效果 */
+.hero-left::before,
+.hero-right::before {
   content: "";
   position: absolute;
   top: 0;
@@ -125,7 +158,8 @@ main {
   z-index: -1;
 }
 
-.hero::after {
+.hero-left::after,
+.hero-right::after {
   content: "";
   position: absolute;
   top: 0;
@@ -153,6 +187,12 @@ main {
   margin: 30px 0;
 }
 
+.game-elements.small {
+  position: absolute;
+  bottom: 20px;
+  gap: 20px;
+}
+
 .pixel-art {
   width: 80px;
   height: 80px;
@@ -177,26 +217,78 @@ main {
   animation-delay: 2s;
 }
 
+.pixel-art-4 {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' fill='%231e3c72'/%3E%3Cpath d='M3,3 L13,3 L13,13 L3,13 Z' fill='none' stroke='%2300c6ff' stroke-width='1'/%3E%3Cpath d='M5,5 L11,5 L11,11 L5,11 Z' fill='none' stroke='%23ff6b6b' stroke-width='1'/%3E%3Cpath d='M7,7 L9,7 L9,9 L7,9 Z' fill='%2300c6ff'/%3E%3C/svg%3E");
+  animation-delay: 1.5s;
+}
+
+.pixel-art-5 {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' fill='%231e3c72'/%3E%3Cpath d='M8,3 L13,11 L3,11 Z' fill='%23ff6b6b'/%3E%3Ccircle cx='8' cy='7' r='2' fill='%2300c6ff'/%3E%3C/svg%3E");
+  animation-delay: 2.5s;
+}
+
 @keyframes float {
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-20px); }
 }
 
-.hero h2 {
+.hero-title {
   font-size: 2.5rem;
   margin-bottom: 20px;
   text-shadow: 
-    0 0 10px rgba(255, 69, 0, 0.7),
-    0 0 20px rgba(255, 165, 0, 0.5);
+    0 0 15px rgba(255, 69, 0, 0.8),
+    0 0 30px rgba(255, 165, 0, 0.6);
   color: #fff0f5;
+  letter-spacing: 1px;
+  animation: glow 2s infinite alternate;
 }
 
-.hero p {
+.hero-description {
   font-size: 1.2rem;
-  margin-bottom: 30px;
+  margin-bottom: 25px;
   line-height: 1.6;
-  text-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
   color: #e6d7ff;
+  max-width: 100%;
+}
+
+.feature-list {
+  display: flex;
+  justify-content: center;
+  gap: 40px;
+  margin-bottom: 40px;
+  flex-wrap: wrap;
+}
+
+.feature-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 15px;
+  background: rgba(30, 10, 60, 0.4);
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.3s ease;
+  width: 160px;
+}
+
+.feature-item:hover {
+  transform: translateY(-5px);
+  background: rgba(40, 15, 80, 0.6);
+  box-shadow: 0 5px 15px rgba(139, 0, 139, 0.3);
+}
+
+.feature-icon {
+  font-size: 2.5rem;
+  margin-bottom: 10px;
+}
+
+.feature-item span {
+  color: #e6d7ff;
+  font-size: 1rem;
+  text-align: center;
+  text-shadow: 0 0 5px rgba(255, 255, 255, 0.3);
 }
 
 .btn {
@@ -228,8 +320,19 @@ main {
   background: linear-gradient(45deg, #ff4500, #ffa500);
   color: white;
   box-shadow: 
-    0 0 15px rgba(255, 69, 0, 0.5),
+    0 0 15px rgba(255, 69, 0, 0.7),
     0 4px 15px rgba(0, 0, 0, 0.3);
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.btn-arrow {
+  transition: transform 0.3s ease;
+}
+
+.btn-primary:hover .btn-arrow {
+  transform: translateX(5px);
 }
 
 .btn-primary:hover {
@@ -256,25 +359,52 @@ main {
 }
 
 /* 响应式设计 */
-@media (max-width: 768px) {
-  .container {
-    padding: 10px;
+@media (max-width: 1200px) {
+  .hero-container {
+    padding: 0 30px;
   }
   
-  header h1 {
-    font-size: 2.5rem;
+  .logo {
+    width: 450px;
   }
   
-  header p {
-    font-size: 1rem;
+  .hero-title {
+    font-size: 2.2rem;
   }
-  
-  .hero {
+}
+
+@media (max-width: 992px) {
+  .hero-container {
+    flex-direction: column;
+    height: auto;
+    min-height: 100vh;
     padding: 20px;
+  }
+  
+  .hero-left,
+  .hero-right {
+    width: 100%;
+    padding: 0;
+    text-align: center;
+  }
+  
+  .hero-left {
+    margin-bottom: 30px;
+  }
+}
+
+@media (max-width: 768px) {
+  .logo {
+    width: 400px;
+  }
+  
+  .tagline {
+    font-size: 1rem;
   }
   
   .game-elements {
     gap: 15px;
+    flex-wrap: wrap;
   }
   
   .pixel-art {
@@ -282,12 +412,55 @@ main {
     height: 60px;
   }
   
-  .hero h2 {
+  .hero-title {
     font-size: 2rem;
+  }
+  
+  .hero-description {
+    font-size: 1.1rem;
+  }
+  
+  .feature-list {
+    gap: 20px;
+  }
+  
+  .feature-item {
+    width: 130px;
   }
   
   .btn {
     padding: 12px 30px;
     font-size: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero-container {
+    padding: 10px;
+  }
+  
+  .logo {
+    width: 350px;
+  }
+  
+  .hero-title {
+    font-size: 1.8rem;
+  }
+  
+  .game-elements {
+    gap: 10px;
+  }
+  
+  .pixel-art {
+    width: 50px;
+    height: 50px;
+  }
+  
+  .feature-item {
+    width: 110px;
+  }
+  
+  .feature-icon {
+    font-size: 2rem;
   }
 }

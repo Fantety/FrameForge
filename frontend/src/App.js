@@ -27,8 +27,7 @@ function App() {
         <Route path="/" element={
           <>
             <header>
-              <h1>FrameForge</h1>
-              <p>专为游戏开发者打造的AI素材生成工具</p>
+              <img src="/frameforge.svg" alt="FrameForge" style={{ width: '500px', height: 'auto' }} />
             </header>
             
             <main>

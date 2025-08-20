@@ -93,48 +93,20 @@ body {
 
 header {
   text-align: center;
-  padding: 40px 0;
-}
-
-header h1 {
-  font-size: 3.5rem;
-  margin-bottom: 15px;
-  text-shadow: 
-    0 0 10px rgba(255, 69, 0, 0.7),
-    0 0 20px rgba(255, 165, 0, 0.5);
-  letter-spacing: 3px;
-  animation: glow 2s infinite alternate;
-  position: relative;
-}
-
-header p {
-  font-size: 1.2rem;
-  max-width: 600px;
-  margin: 0 auto;
-  line-height: 1.6;
-  text-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
-  opacity: 0.9;
-  color: #e6d7ff;
+  padding: 10px 0;
 }
 
 main {
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: 70vh;
+  min-height: 20vh;
 }
 
 .hero {
   text-align: center;
-  max-width: 800px;
-  padding: 40px;
-  border-radius: 20px;
-  background: rgba(26, 6, 48, 0.3);
-  box-shadow: 
-    0 0 30px rgba(255, 69, 0, 0.3),
-    0 8px 32px rgba(0, 0, 0, 0.3);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  width: 100%;
+  padding: 20px;
   position: relative;
   overflow: hidden;
 }
@@ -254,7 +226,7 @@ main {
 
 .btn-primary {
   background: linear-gradient(45deg, #ff4500, #ffa500);
-  color: #333;
+  color: white;
   box-shadow: 
     0 0 15px rgba(255, 69, 0, 0.5),
     0 4px 15px rgba(0, 0, 0, 0.3);

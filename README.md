@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="icon.png" alt="FrameForge Logo" width="200">
+  <img src="icon.png" alt="FrameForge Logo" width="500">
 </div>
 
 # FrameForge

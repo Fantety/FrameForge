@@ -239,7 +239,7 @@ const AnimationGeneration = () => {
       const frameUrl = splitFrames[frameIndex];
       const response = await fetch(frameUrl);
       const blob = await response.blob();
-      const fileName = `frame_${frameIndex + 1}.png`;
+      const fileName = `frame_${frameIndex + 1}.jpg`;
       zip.file(fileName, blob);
     });
 

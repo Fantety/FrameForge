@@ -7,11 +7,12 @@
  * @LastEditTime: 2025-08-18 18:29:28
  */
 import React, { useState, useRef, useEffect } from 'react';
-import { Box, Typography, Paper, Button, TextField, FormControl, InputLabel, Select, MenuItem, Slider, FormControlLabel, Switch, Card, CardMedia, CircularProgress, LinearProgress, Modal, IconButton } from '@mui/material';
+import { Box, Typography, Paper, Button, TextField, FormControl, InputLabel, Select, MenuItem, Slider, FormControlLabel, Switch, Card, CardMedia, CircularProgress, LinearProgress, Modal, IconButton, Tooltip } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 
 const ImageGeneration = () => {
   const [prompt, setPrompt] = useState('');
+  const [imageUrl, setImageUrl] = useState(''); // 新增：存储图片URL
   const [size, setSize] = useState('512x512');
   const [guidanceScale, setGuidanceScale] = useState(2.5);
   const [seed, setSeed] = useState(12345);
@@ -27,19 +28,27 @@ const ImageGeneration = () => {
   const handleGenerate = async () => {
     setLoading(true);
     try {
+      // 准备请求参数
+      const requestBody = {
+        prompt,
+        size,
+        guidance_scale: guidanceScale,
+        seed: parseInt(seed),
+        watermark
+      };
+      
+      // 如果提供了图片URL，则添加到请求参数中
+      if (imageUrl && imageUrl.trim()) {
+        requestBody.image = imageUrl.trim();
+      }
+      
       // 调用后端API生成图像
       const response = await fetch('http://localhost:8000/api/generate-image', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          prompt,
-          size,
-          guidance_scale: guidanceScale,
-          seed: parseInt(seed),
-          watermark
-        })
+        body: JSON.stringify(requestBody)
       });
 
       if (!response.ok) {
@@ -317,6 +326,68 @@ const ImageGeneration = () => {
             >
               AI生成提示词
             </Button>
+            <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
+              {/* 图片URL输入组件 */}
+              <TextField
+                fullWidth
+                label="图片URL"
+                value={imageUrl}
+                onChange={(e) => setImageUrl(e.target.value)}
+                margin="normal"
+                variant="outlined"
+                sx={{
+                  '& .MuiInputBase-input': { color: 'white' },
+                  '& .MuiInputLabel-root': { color: 'white' },
+                  '& .MuiOutlinedInput-root': {
+                    '& fieldset': {
+                      borderColor: '#ff4500',
+                    },
+                    '&:hover fieldset': {
+                      borderColor: '#ffa500',
+                    },
+                    '&.Mui-focused fieldset': {
+                      borderColor: '#ffa500',
+                    },
+                  }
+                }}
+              />
+              
+              {/* 图片预览悬浮窗 */}
+              {imageUrl && (
+                <Tooltip 
+                  title={
+                    <img 
+                      src={imageUrl} 
+                      alt="预览" 
+                      style={{ maxWidth: '300px', maxHeight: '300px', borderRadius: '8px' }} 
+                    />
+                  }
+                  placement="top"
+                  arrow
+                >
+                  <Box 
+                    sx={{ 
+                      textAlign: 'center', 
+                      cursor: 'pointer',
+                      padding: '5px',
+                      border: '1px dashed #ff4500',
+                      borderRadius: '4px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      minWidth: '120px',
+                      height: '56px', // 设置与TextField一致的高度
+                      marginTop: '16px', // 与TextField的margin-top一致
+                      marginBottom: '8px'  // 与TextField的margin-bottom一致
+                    }}
+                  >
+                    <Typography variant="body2" sx={{ color: 'white' }}>
+                      悬浮预览
+                    </Typography>
+                  </Box>
+                </Tooltip>
+              )}
+            </Box>
             <TextField
               fullWidth
               label="Prompt"
@@ -498,12 +569,12 @@ const ImageGeneration = () => {
               <Button
                 variant="contained"
                 onClick={() => {
-                  // 跳转到动画生成页面，并传递图像URL
-                  window.location.hash = '#/create';
                   // 通过localStorage传递图像URL
                   localStorage.setItem('firstFrameImageUrl', generatedImage);
                   // 触发自定义事件通知AnimationGeneration组件
                   window.dispatchEvent(new Event('firstFrameImageUrlUpdated'));
+                  // 使用React Router导航到创作页面，并设置activeSection为animation
+                  window.dispatchEvent(new CustomEvent('navigateToCreate', { detail: { section: 'animation' } }));
                 }}
                 sx={{
                   background: 'linear-gradient(45deg, #00c853, #64dd17)',

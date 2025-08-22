@@ -131,6 +131,24 @@ export default App;
 export function CreatePage() {
   const [activeSection, setActiveSection] = React.useState('image');
   
+  const handleSectionChange = (section) => {
+    setActiveSection(section);
+  };
+
+  // 添加对自定义导航事件的监听
+  React.useEffect(() => {
+    const handleNavigateToCreate = (event) => {
+      const { section } = event.detail;
+      setActiveSection(section);
+    };
+
+    window.addEventListener('navigateToCreate', handleNavigateToCreate);
+
+    return () => {
+      window.removeEventListener('navigateToCreate', handleNavigateToCreate);
+    };
+  }, []);
+
   const renderContent = () => {
     switch (activeSection) {
       case 'image':
@@ -146,7 +164,7 @@ export function CreatePage() {
   
   return (
     <div style={{ display: 'flex' }}>
-      <Sidebar activeSection={activeSection} onSectionChange={setActiveSection} />
+      <Sidebar activeSection={activeSection} onSectionChange={handleSectionChange} />
       <main style={{ flexGrow: 1, padding: '20px' }}>
         {renderContent()}
       </main>

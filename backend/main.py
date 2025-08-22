@@ -15,8 +15,14 @@ import threading
 import shutil
 from chiptune_generation import MusicGenerationRequest, generate_music
 
-# 通过 pip install 'volcengine-python-sdk[ark]' 安装方舟SDK
 from volcenginesdkarkruntime import Ark
+import config
+print(config.TITLE)
+print(config.PROJECT_NAME," Version: ", config.VERSION)
+print("© 2025 Fantety")
+print("Powered by VolcEngine. https://www.volcengine.com\n")
+
+
 
 # 初始化Ark客户端
 client = Ark(
@@ -32,6 +38,7 @@ class ImageGenerationRequest(BaseModel):
     guidance_scale: Optional[float] = 2.5
     seed: Optional[int] = 12345
     watermark: Optional[bool] = True
+    image: Optional[str] = None
 
 class PromptGenerationRequest(BaseModel):
     user_request: str
@@ -83,6 +90,7 @@ frontend_dir = os.path.join(current_dir, "build")
 frontend_build_path = frontend_dir
 node_modules_path = os.path.join(current_dir, "..", "frontend", "node_modules")
 
+print(f"正在执行启动前检查...")
 print(f"检查前端目录: {frontend_dir}")
 print(f"检查node_modules路径: {node_modules_path}")
 print(f"检查前端构建路径: {frontend_build_path}")
@@ -209,29 +217,50 @@ if os.path.isdir(frontend_build_path):
             guidance_scale = request.guidance_scale
             seed = request.seed
             watermark = request.watermark
+            # 获取图片URL（如果有的话）
+            image_url = getattr(request, 'image', None)
+            
             try:
-                print(f"收到图像生成请求: prompt={prompt}, size={size}, guidance_scale={guidance_scale}, seed={seed}, watermark={watermark}")
+                print(f"收到图像生成请求: prompt={prompt}, size={size}, guidance_scale={guidance_scale}, seed={seed}, watermark={watermark}, image={image_url}")
                 
                 # 验证参数
                 if not prompt or len(prompt.strip()) == 0:
                     raise HTTPException(status_code=400, detail="Prompt不能为空")
                 
-                # 调用图像生成API
-                imagesResponse = client.images.generate(
-                    model="doubao-seedream-3-0-t2i-250415",
-                    prompt=prompt,
-                    size=size,
-                    guidance_scale=guidance_scale,
-                    seed=seed,
-                    watermark=watermark
-                )
+                # 检查是否提供了有效的图片URL
+                if image_url and image_url.strip():
+                    # 使用图生图模型
+                    model = "doubao-seededit-3-0-i2i-250628"
+                    # 调整size为adaptive
+                    size = "adaptive"
+                    # 添加image参数
+                    imagesResponse = client.images.generate(
+                        model=model,
+                        prompt=prompt,
+                        image=image_url.strip(),
+                        size=size,
+                        guidance_scale=guidance_scale,
+                        seed=seed,
+                        watermark=watermark
+                    )
+                else:
+                    # 使用默认的文生图模型
+                    model = "doubao-seedream-3-0-t2i-250415"
+                    imagesResponse = client.images.generate(
+                        model=model,
+                        prompt=prompt,
+                        size=size,
+                        guidance_scale=guidance_scale,
+                        seed=seed,
+                        watermark=watermark
+                    )
                 
                 # 获取图片URL
-                image_url = imagesResponse.data[0].url
-                print(f"图像生成成功，图片URL: {image_url}")
+                result_image_url = imagesResponse.data[0].url
+                print(f"图像生成成功，图片URL: {result_image_url}")
                 
                 # 返回图片URL
-                return {"image_url": image_url}
+                return {"image_url": result_image_url}
             except HTTPException as he:
                 print(f"HTTP异常: {he.detail}")
                 raise he

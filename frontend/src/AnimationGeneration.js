@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { historyService } from './HistoryService';
+import { settingsStorageService } from './SettingsStorageService';
 import { Box, Typography, Paper, Button, TextField, FormControl, InputLabel, Select, MenuItem, Slider, FormControlLabel, Switch, Card, CardMedia, CircularProgress, LinearProgress, Modal, IconButton, Divider, Grid, Checkbox } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import PreviewIcon from '@mui/icons-material/Preview';
@@ -8,7 +9,25 @@ import JSZip from 'jszip';
 const AnimationGeneration = () => {
   const [prompt, setPrompt] = useState('');
   const [firstFrame, setFirstFrame] = useState('');
-
+  const [resolution, setResolution] = useState('1080p');
+  const [duration, setDuration] = useState(5);
+  const [cameraFixed, setCameraFixed] = useState(false);
+  const [watermark, setWatermark] = useState(true);
+  const [generatedAnimation, setGeneratedAnimation] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [downloading, setDownloading] = useState(false);
+  const [openModal, setOpenModal] = useState(false);
+  const [userRequest, setUserRequest] = useState('');
+  const [generatedPrompt, setGeneratedPrompt] = useState('');
+  const [generatingPrompt, setGeneratingPrompt] = useState(false);
+  const [showPreview, setShowPreview] = useState(false);
+  const [previewImage, setPreviewImage] = useState('');
+  const previewButtonRef = useRef(null);
+  const [previewPosition, setPreviewPosition] = useState({ top: 0, left: 0 });
+  
+  // 防抖保存函数
+  const debounceSave = useRef(null);
+  
   // 在组件加载时检查是否有传递过来的图像URL
   useEffect(() => {
     const handleFirstFrameImageUrl = () => {
@@ -31,23 +50,42 @@ const AnimationGeneration = () => {
       window.removeEventListener('firstFrameImageUrlUpdated', handleFirstFrameImageUrl);
     };
   }, []);
-  const [resolution, setResolution] = useState('1080p');
-  const [duration, setDuration] = useState(5);
-  const [cameraFixed, setCameraFixed] = useState(false);
-  const [watermark, setWatermark] = useState(true);
-  const [generatedAnimation, setGeneratedAnimation] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [downloading, setDownloading] = useState(false);
-
-  // AI生成提示词相关状态
-  const [openModal, setOpenModal] = useState(false);
-  const [userRequest, setUserRequest] = useState('');
-  const [generatedPrompt, setGeneratedPrompt] = useState('');
-  const [generatingPrompt, setGeneratingPrompt] = useState(false);
-  const [showPreview, setShowPreview] = useState(false);
-  const [previewImage, setPreviewImage] = useState('');
-  const previewButtonRef = useRef(null);
-  const [previewPosition, setPreviewPosition] = useState({ top: 0, left: 0 });
+  
+  // 加载保存的设置
+  useEffect(() => {
+    const savedSettings = settingsStorageService.getAnimationGenerationSettings();
+    if (savedSettings) {
+      setPrompt(savedSettings.prompt || '');
+      // 注意：firstFrame不自动恢复，因为它通常是临时传递的
+      setResolution(savedSettings.resolution || '1080p');
+      setDuration(savedSettings.duration !== undefined ? savedSettings.duration : 5);
+      setCameraFixed(savedSettings.cameraFixed !== undefined ? savedSettings.cameraFixed : false);
+      setWatermark(savedSettings.watermark !== undefined ? savedSettings.watermark : true);
+    }
+  }, []);
+  
+  // 保存设置（使用防抖）
+  const saveSettings = () => {
+    if (debounceSave.current) {
+      clearTimeout(debounceSave.current);
+    }
+    
+    debounceSave.current = setTimeout(() => {
+      settingsStorageService.saveAnimationGenerationSettings({
+        prompt,
+        // 注意：不保存firstFrame，因为它通常是临时传递的
+        resolution,
+        duration,
+        cameraFixed,
+        watermark
+      });
+    }, 300); // 300ms防抖
+  };
+  
+  // 监听设置变化并保存
+  useEffect(() => {
+    saveSettings();
+  }, [prompt, resolution, duration, cameraFixed, watermark]);
 
   // 帧拆分相关状态
   const [frameInterval, setFrameInterval] = useState(1);

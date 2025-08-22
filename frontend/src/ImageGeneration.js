@@ -4,14 +4,16 @@
  * @Descripttion: 
  * @Date: 2025-08-17 18:05:29
  * @LastEditors: Fantety
- * @LastEditTime: 2025-08-18 18:29:28
+ * @LastEditTime: 2025-08-22 16:53:45
  */
 import React, { useState, useRef, useEffect } from 'react';
 import { historyService } from './HistoryService';
+import { settingsStorageService } from './SettingsStorageService';
 import { Box, Typography, Paper, Button, TextField, FormControl, InputLabel, Select, MenuItem, Slider, FormControlLabel, Switch, Card, CardMedia, CircularProgress, LinearProgress, Modal, IconButton, Tooltip } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 
 const ImageGeneration = () => {
+  // 初始化状态时尝试从本地存储恢复
   const [prompt, setPrompt] = useState('');
   const [imageUrl, setImageUrl] = useState(''); // 新增：存储图片URL
   const [size, setSize] = useState('512x512');
@@ -25,6 +27,45 @@ const ImageGeneration = () => {
   const [userRequest, setUserRequest] = useState('');
   const [generatedPrompt, setGeneratedPrompt] = useState('');
   const [generatingPrompt, setGeneratingPrompt] = useState(false);
+  
+  // 防抖保存函数
+  const debounceSave = useRef(null);
+  
+  // 加载保存的设置
+  useEffect(() => {
+    const savedSettings = settingsStorageService.getImageGenerationSettings();
+    if (savedSettings) {
+      setPrompt(savedSettings.prompt || '');
+      setImageUrl(savedSettings.imageUrl || '');
+      setSize(savedSettings.size || '512x512');
+      setGuidanceScale(savedSettings.guidanceScale !== undefined ? savedSettings.guidanceScale : 2.5);
+      setSeed(savedSettings.seed || 12345);
+      setWatermark(savedSettings.watermark !== undefined ? savedSettings.watermark : true);
+    }
+  }, []);
+  
+  // 保存设置（使用防抖）
+  const saveSettings = () => {
+    if (debounceSave.current) {
+      clearTimeout(debounceSave.current);
+    }
+    
+    debounceSave.current = setTimeout(() => {
+      settingsStorageService.saveImageGenerationSettings({
+        prompt,
+        imageUrl,
+        size,
+        guidanceScale,
+        seed,
+        watermark
+      });
+    }, 300); // 300ms防抖
+  };
+  
+  // 监听设置变化并保存
+  useEffect(() => {
+    saveSettings();
+  }, [prompt, imageUrl, size, guidanceScale, seed, watermark]);
 
   const handleGenerate = async () => {
     setLoading(true);

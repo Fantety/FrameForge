@@ -1,13 +1,44 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { historyService } from './HistoryService';
+import { settingsStorageService } from './SettingsStorageService';
 import { Box, Button, TextField, Typography, Card, CardContent, LinearProgress } from '@mui/material';
 import MusicNoteIcon from '@mui/icons-material/MusicNote';
 
 const ChiptuneGeneration = () => {
+  // 初始化状态时尝试从本地存储恢复
   const [prompt, setPrompt] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedMusic, setGeneratedMusic] = useState(null);
   const [error, setError] = useState('');
+  
+  // 防抖保存函数
+  const debounceSave = useRef(null);
+  
+  // 加载保存的设置
+  useEffect(() => {
+    const savedSettings = settingsStorageService.getChiptuneGenerationSettings();
+    if (savedSettings) {
+      setPrompt(savedSettings.prompt || '');
+    }
+  }, []);
+  
+  // 保存设置（使用防抖）
+  const saveSettings = () => {
+    if (debounceSave.current) {
+      clearTimeout(debounceSave.current);
+    }
+    
+    debounceSave.current = setTimeout(() => {
+      settingsStorageService.saveChiptuneGenerationSettings({
+        prompt
+      });
+    }, 300); // 300ms防抖
+  };
+  
+  // 监听设置变化并保存
+  useEffect(() => {
+    saveSettings();
+  }, [prompt]);
 
   const handleGenerate = async () => {
     if (!prompt.trim()) {

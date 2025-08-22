@@ -7,7 +7,7 @@ LastEditors: Fantety
 LastEditTime: 2025-08-21 16:23:31
 '''
 PROJECT_NAME = "FrameForge"
-VERSION = "0.2.2"
+VERSION = "0.2.3"
 TITLE="""
 ___________                           ___________                         
 \_   _____/___________    _____   ____\_   _____/__________  ____   ____  

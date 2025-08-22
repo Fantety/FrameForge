@@ -2,7 +2,7 @@
   <img src="icon.png" alt="FrameForge Logo" width="500">
 </div>
 
-# FrameForge
+# FrameForge <a href="README_EN.md" target="_blank" style="font-size: 0.8em; text-decoration: none; color: #666;">[English Version]</a>
 
 FrameForge是一个使用FastAPI和React构建的Web应用程序，专为游戏开发者打造的AI素材生成工具。它提供了多种AI驱动的功能，帮助开发者快速创建游戏所需的视觉和音频素材。
 

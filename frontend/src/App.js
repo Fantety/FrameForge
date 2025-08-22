@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import HistoryFloatingButton from './HistoryFloatingButton';
 import { useNavigate, Routes, Route } from 'react-router-dom';
 import './App.css';
 import Sidebar from './Sidebar';
@@ -75,54 +76,57 @@ function App() {
   };
 
   return (
-    <div className="container">
-      {/* 动态粒子背景 */}
-      {particles.map((particle) => (
-        <div 
-          key={particle.id} 
-          className={`particle particle-shape-${particle.shape}`} 
-          style={getParticleStyle(particle)} 
-        ></div>
-      ))}
-      
-      <Routes>
-        <Route path="/" element={
-          <>
-            <main className="hero-container">
-              <div className="hero-left" style={getParallaxStyle(0.8)}>
-                <div className="logo-container">
-                  <img src="/frameforge.svg" alt="FrameForge" className="logo" />
-                  <div className="logo-glow"></div>
-                </div>
-              </div>
-              
-              <div className="hero-right" style={getParallaxStyle(1.2)}>
-                <div className="feature-list">
-                  <div className="feature-item">
-                    <div className="feature-icon">🎨</div>
-                    <span>AI生成图像</span>
-                  </div>
-                  <div className="feature-item">
-                    <div className="feature-icon">✨</div>
-                    <span>动画效果创建</span>
-                  </div>
-                  <div className="feature-item">
-                    <div className="feature-icon">🎵</div>
-                    <span>8位芯片音乐制作</span>
+      <div className="container">
+        {/* 动态粒子背景 */}
+        {particles.map((particle) => (
+          <div 
+            key={particle.id} 
+            className={`particle particle-shape-${particle.shape}`} 
+            style={getParticleStyle(particle)} 
+          ></div>
+        ))}
+        
+        <Routes>
+          <Route path="/" element={
+            <>
+              <main className="hero-container">
+                <div className="hero-left" style={getParallaxStyle(0.8)}>
+                  <div className="logo-container">
+                    <img src="/frameforge.svg" alt="FrameForge" className="logo" />
+                    <div className="logo-glow"></div>
                   </div>
                 </div>
-                <button id="get-started" className="btn btn-primary" onClick={handleStart}>
-                  立即开始创作
-                  <span className="btn-arrow">→</span>
-                </button>
-              </div>
-            </main>
-          </>
-        } />
-        <Route path="/create" element={<CreatePage />} />
-      </Routes>
-    </div>
-  );
+                
+                <div className="hero-right" style={getParallaxStyle(1.2)}>
+                  <div className="feature-list">
+                    <div className="feature-item">
+                      <div className="feature-icon">🎨</div>
+                      <span>AI生成图像</span>
+                    </div>
+                    <div className="feature-item">
+                      <div className="feature-icon">✨</div>
+                      <span>动画效果创建</span>
+                    </div>
+                    <div className="feature-item">
+                      <div className="feature-icon">🎵</div>
+                      <span>8位芯片音乐制作</span>
+                    </div>
+                  </div>
+                  <button id="get-started" className="btn btn-primary" onClick={handleStart}>
+                    立即开始创作
+                    <span className="btn-arrow">→</span>
+                  </button>
+                </div>
+              </main>
+            </>
+          } />
+          <Route path="/create" element={<CreatePage />} />
+        </Routes>
+        
+        {/* 悬浮历史记录按钮 */}
+        <HistoryFloatingButton />
+      </div>
+    );
 }
 
 export default App;

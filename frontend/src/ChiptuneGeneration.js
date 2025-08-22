@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { historyService } from './HistoryService';
 import { Box, Button, TextField, Typography, Card, CardContent, LinearProgress } from '@mui/material';
 import MusicNoteIcon from '@mui/icons-material/MusicNote';
 
@@ -39,6 +40,16 @@ const ChiptuneGeneration = () => {
       const musicBlob = await response.blob();
       const musicUrl = URL.createObjectURL(musicBlob);
       setGeneratedMusic(musicUrl);
+      
+      // 保存到历史记录
+      historyService.addHistoryItem({
+        type: 'chiptune',
+        prompt,
+        generatedUrl: musicUrl,
+        params: {
+          bpm: 130
+        }
+      });
     } catch (err) {
       setError('音乐生成失败: ' + err.message);
       console.error('音乐生成错误:', err);

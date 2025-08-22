@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { historyService } from './HistoryService';
 import { Box, Typography, Paper, Button, TextField, FormControl, InputLabel, Select, MenuItem, Slider, FormControlLabel, Switch, Card, CardMedia, CircularProgress, LinearProgress, Modal, IconButton, Divider, Grid, Checkbox } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import PreviewIcon from '@mui/icons-material/Preview';
@@ -63,7 +64,7 @@ const AnimationGeneration = () => {
     setLoading(true);
     try {
       // 调用后端API生成动画
-      const response = await fetch('http://localhost:8000/api/generate-animation', {
+      const response = await fetch('http://localhost:8000/api/generate-animation', { 
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -85,6 +86,22 @@ const AnimationGeneration = () => {
 
       const data = await response.json();
       setGeneratedAnimation(data.video_url);
+      
+      // 保存到历史记录
+      if (data.video_url) {
+        historyService.addHistoryItem({
+          type: 'animation',
+          prompt,
+          videoUrl: data.video_url,
+          params: {
+            resolution,
+            duration,
+            camera_fixed: cameraFixed,
+            watermark,
+            hasFirstFrame: !!firstFrame
+          }
+        });
+      }
     } catch (error) {
       console.error('生成动画时出错:', error);
       // 显示错误消息给用户

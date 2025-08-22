@@ -7,6 +7,7 @@
  * @LastEditTime: 2025-08-18 18:29:28
  */
 import React, { useState, useRef, useEffect } from 'react';
+import { historyService } from './HistoryService';
 import { Box, Typography, Paper, Button, TextField, FormControl, InputLabel, Select, MenuItem, Slider, FormControlLabel, Switch, Card, CardMedia, CircularProgress, LinearProgress, Modal, IconButton, Tooltip } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 
@@ -57,6 +58,22 @@ const ImageGeneration = () => {
 
       const data = await response.json();
       setGeneratedImage(data.image_url);
+      
+      // 保存到历史记录
+      if (data.image_url) {
+        historyService.addHistoryItem({
+          type: 'image',
+          prompt,
+          generatedUrl: data.image_url,
+          params: {
+            size,
+            guidance_scale: guidanceScale,
+            seed: parseInt(seed),
+            watermark,
+            hasImageUrl: !!(imageUrl && imageUrl.trim())
+          }
+        });
+      }
     } catch (error) {
       console.error('生成图像时出错:', error);
       // 在实际应用中，这里可以显示错误消息给用户

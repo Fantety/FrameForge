@@ -55,7 +55,6 @@
 
 # Gatsby 相关
 /frontend/.cache/
-/frontend/public/
 
 # 遗留的构建文件夹
 /frontend/dist/

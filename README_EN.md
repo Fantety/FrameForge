@@ -49,6 +49,8 @@ Before executing the packaging script, ensure you have installed the following s
 
 1. Node.js (recommended version 14 or higher) - [Node.js official website](https://nodejs.org/)
 2. Python (recommended version 3.7 or higher)
+3. ffmpeg (Optional if audio generation is not required, latest version)
+ps: If the packaging fails or you attempt to run the source code, the modules of the official Volcano ark sdk should be installed using the command "pip install --upgrade "volcengine-python-sdk[ark]"
 
 You can check if they are correctly installed with the following commands:
 

@@ -48,7 +48,9 @@ FrameForge提供了三种核心的AI素材生成功能，帮助游戏开发者�
 在执行打包脚本之前，请确保您已安装以下软件：
 
 1. Node.js (推荐版本14或更高版本) - [Node.js官网](https://nodejs.org/)
-2. Python (推荐版本3.7或更高版本)
+2. Python (推荐版本3.7-3.8版本，3.10及以上版本中，numpy的版本可能存在不兼容问题)
+3. ffmpeg (如果不需要使用音频生成可不安装，最新版本)
+ps:如果打包失败或尝试源码运行的，火山方舟官方sdk的模块应使用“pip install --upgrade "volcengine-python-sdk[ark]"”指令安装
 
 您可以通过以下命令检查是否已正确安装：
 
